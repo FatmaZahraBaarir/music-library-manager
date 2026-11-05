@@ -1,0 +1,12 @@
+# Fichiers générés par Python
+__pycache__/
+*.py[cod]
+
+# Environnements et configuration locale
+.venv/
+venv/
+.env
+
+# Fichiers audio utilisés uniquement pour les tests locaux
+src/tests-auto/fixtures/audio/*.mp3
+src/tests-auto/fixtures/audio/*.flac
