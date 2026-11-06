@@ -8,7 +8,7 @@ L’exploration récursive, le filtrage par extension et type MIME ainsi que le 
 
 - [x] Créer un service XSPF dans `src/library/services/playlist/` (première version : playlist vide).
 - [x] Transformer une liste de `Track` en playlist XSPF.
-- [ ] Générer automatiquement `default_playlist.xspf` après l’exploration d’un dossier.
+- [x] Générer automatiquement `default_playlist.xspf` après l’exploration d’un dossier.
 - [x] Sauvegarder une playlist vers le chemin choisi par l’utilisateur.
 - [x] Ouvrir un fichier `.xspf` existant.
 - [x] Reconstituer un objet `Playlist` depuis le XML chargé.
@@ -19,7 +19,7 @@ L’exploration récursive, le filtrage par extension et type MIME ainsi que le 
   - [x] un XML invalide ;
   - [x] une playlist contenant des données incorrectes.
 - [ ] Valider les fichiers générés avec <https://validator.xspf.org/>.
-- [ ] Ajouter les méthodes nécessaires dans `LibraryInterface` et `LibraryService`.
+- [x] Ajouter les méthodes nécessaires dans `LibraryInterface` et `LibraryService`.
 - [x] Écrire les tests automatiques de sauvegarde, d’ouverture et d’erreurs XSPF.
 
 ## Priorité 2 — Réaliser entièrement le CLI
@@ -94,8 +94,8 @@ Les tests ne démarrent pas dans l’environnement Hermes parce que le module `m
 
 ## Ordre de travail immédiat
 
-1. [ ] Service XSPF et ses tests.
-2. [ ] Sauvegarde de `default_playlist.xspf`.
+1. [x] Service XSPF et ses tests.
+2. [x] Sauvegarde de `default_playlist.xspf`.
 3. [ ] Ouverture et validation XSPF.
 4. [ ] CLI : `-f`, `-d`, `-o`, aide et erreurs.
 5. [ ] Connexion de `-p` au lecteur audio de Fatma-Zahra.
