@@ -1,0 +1,102 @@
+from abc import ABC, abstractmethod
+
+
+class LibraryInterface(ABC):
+	"""
+	@brief Définit le point d'entrée commun du CLI et de la GUI.
+
+	Cette interface masque les services techniques utilisés pour explorer les
+	dossiers et gérer les métadonnées.
+	"""
+
+	@abstractmethod
+	def find_audio_files(self, directory_path):
+		"""
+		@brief Explore récursivement un dossier et trouve ses fichiers audio.
+
+		@param directory_path Chemin du dossier à explorer.
+		@type directory_path str ou pathlib.Path
+		@return Liste triée des fichiers MP3 et FLAC valides.
+		@rtype list de pathlib.Path
+		"""
+		raise NotImplementedError
+
+	@abstractmethod
+	def read_metadata(self, file_path):
+		"""
+		@brief Lit les métadonnées d'un fichier audio valide.
+
+		@param file_path Chemin du fichier MP3 ou FLAC.
+		@type file_path str ou pathlib.Path
+		@return Métadonnées extraites du fichier.
+		@rtype Metadata
+		"""
+		raise NotImplementedError
+
+	@abstractmethod
+	def update_metadata(self, file_path, metadata):
+		"""
+		@brief Modifie puis relit les métadonnées d'un fichier audio.
+
+		@param file_path Chemin du fichier MP3 ou FLAC.
+		@type file_path str ou pathlib.Path
+		@param metadata Métadonnées à appliquer.
+		@type metadata Metadata
+		@return Métadonnées sauvegardées et relues.
+		@rtype Metadata
+		"""
+		raise NotImplementedError
+
+	@abstractmethod
+	def update_metadata_from_text(
+		self,
+		file_path,
+		title_text=None,
+		artist_text=None,
+		album_title_text=None,
+		track_number_text=None,
+		year_text=None,
+	):
+		"""
+		@brief Convertit les saisies textuelles puis modifie les métadonnées.
+
+		@param file_path Chemin du fichier MP3 ou FLAC.
+		@type file_path str ou pathlib.Path
+		@param title_text Titre saisi, ou None.
+		@type title_text str ou None
+		@param artist_text Artiste saisi, ou None.
+		@type artist_text str ou None
+		@param album_title_text Album saisi, ou None.
+		@type album_title_text str ou None
+		@param track_number_text Numéro de piste saisi, ou None.
+		@type track_number_text str ou None
+		@param year_text Année saisie, ou None.
+		@type year_text str ou None
+		@return Métadonnées sauvegardées et relues.
+		@rtype Metadata
+		"""
+		raise NotImplementedError
+
+	@abstractmethod
+	def read_track(self, file_path):
+		"""
+		@brief Construit un morceau depuis un fichier audio.
+
+		@param file_path Chemin du fichier MP3 ou FLAC.
+		@type file_path str ou pathlib.Path
+		@return Morceau contenant son format, sa durée et ses métadonnées.
+		@rtype Track
+		"""
+		raise NotImplementedError
+
+	@abstractmethod
+	def scan_library(self, directory_path):
+		"""
+		@brief Explore un dossier et construit tous les morceaux reconnus.
+
+		@param directory_path Chemin du dossier à explorer.
+		@type directory_path str ou pathlib.Path
+		@return Liste triée des morceaux trouvés.
+		@rtype list de Track
+		"""
+		raise NotImplementedError
