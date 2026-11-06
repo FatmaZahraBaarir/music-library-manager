@@ -78,13 +78,15 @@ La structure de la fenêtre existe, mais ses boutons ne sont pas encore tous rel
 
 ## Lancer le CLI
 
-Le premier bloc du CLI gère les options et leurs incompatibilités :
+Le CLI gère les options, leurs incompatibilités et la création d'une playlist depuis un dossier :
 
 ```bash
 python3 src/cli/main.py -h
+python3 src/cli/main.py -d ./music/
+python3 src/cli/main.py -d ./music/ -o playlist.xspf
 ```
 
-Les options courtes demandées par le sujet sont `-f`, `-d`, `-o` et `-p`. Les traitements associés seront ajoutés progressivement.
+Les options courtes demandées par le sujet sont `-f`, `-d`, `-o` et `-p`. Les traitements de `-f` et `-p` restent à ajouter.
 
 ## Lancer les tests
 
@@ -110,7 +112,7 @@ Ces tests vérifient actuellement :
 ### Tests des arguments du CLI
 
 ```bash
-python3 src/tests-auto/cli/test_cli_arguments.py -v
+python3 -m unittest discover -s src/tests-auto/cli -p "test_*.py" -v
 ```
 
 ### Tous les tests

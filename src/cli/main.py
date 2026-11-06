@@ -1,4 +1,11 @@
 import argparse
+import sys
+from pathlib import Path
+
+
+SRC_DIRECTORY = Path(__file__).resolve().parents[1]
+if str(SRC_DIRECTORY) not in sys.path:
+	sys.path.insert(0, str(SRC_DIRECTORY))
 
 
 def create_parser():
@@ -70,17 +77,64 @@ def parse_arguments(arguments=None):
 	return args
 
 
-def main(arguments=None):
+def process_directory(args, library_service):
+	"""
+	@brief Explore un dossier et sauvegarde la playlist XSPF obtenue.
+
+	@param args Arguments contenant le dossier et le chemin de sortie éventuel.
+	@type args argparse.Namespace
+	@param library_service Service principal de la bibliothèque musicale.
+	@type library_service LibraryInterface
+	@return Code de succès du traitement.
+	@rtype int
+	"""
+	output_path = Path(args.output or "default_playlist.xspf")
+	playlist = library_service.create_playlist_from_directory(
+		args.directory,
+		output_path,
+	)
+
+	print(f"Playlist créée : {playlist.file_path}")
+	print(f"{len(playlist.tracks)} morceau(x) trouvé(s) :")
+	for track in playlist.tracks:
+		print(f"- {track.file_path}")
+
+	return 0
+
+
+def main(arguments=None, library_service=None):
 	"""
 	@brief Lance le programme en ligne de commande.
 
 	@param arguments Arguments à analyser, ou None pour utiliser ceux du terminal.
 	@type arguments list de str ou None
-	@return Arguments reconnus pendant ce premier bloc du CLI.
-	@rtype argparse.Namespace
+	@param library_service Service fourni, ou None pour utiliser le service réel.
+	@type library_service LibraryInterface ou None
+	@return Code de sortie du programme.
+	@rtype int
 	"""
-	return parse_arguments(arguments)
+	args = parse_arguments(arguments)
+
+	if args.directory:
+		try:
+			if library_service is None:
+				from library.services.library_service import LibraryService
+				library_service = LibraryService()
+			return process_directory(args, library_service)
+		except ImportError as error:
+			print(f"Erreur : dépendance Python absente ({error}).", file=sys.stderr)
+			return 1
+		except (OSError, ValueError) as error:
+			print(f"Erreur : {error}", file=sys.stderr)
+			return 1
+
+	if args.file:
+		print("Erreur : l'option -f n'est pas encore implémentée.", file=sys.stderr)
+		return 1
+
+	print("Erreur : l'option -p n'est pas encore implémentée.", file=sys.stderr)
+	return 1
 
 
 if __name__ == "__main__":
-	main()
+	raise SystemExit(main())
