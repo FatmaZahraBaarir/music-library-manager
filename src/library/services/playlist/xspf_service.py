@@ -55,10 +55,23 @@ class XspfService:
 		file_path = Path(file_path)
 		if not file_path.is_file():
 			raise ValueError("Le fichier XSPF n'existe pas.")
+		if file_path.suffix.lower() != ".xspf":
+			raise ValueError("Le fichier doit être au format XSPF.")
 
 		# Lit le fichier et récupère son titre
-		root = ET.parse(file_path).getroot()
+		try:
+			root = ET.parse(file_path).getroot()
+		except ET.ParseError as error:
+			raise ValueError("Le fichier XSPF contient un XML invalide.") from error
+
+		# Vérifie le contenu de la playlist
+		if root.tag != XSPF_TAG + "playlist" or root.attrib.get("version") != "1":
+			raise ValueError("Le fichier ne contient pas une playlist XSPF valide.")
+
 		title = root.findtext(XSPF_TAG + "title")
+		track_list = root.find(XSPF_TAG + "trackList")
+		if title is None or track_list is None:
+			raise ValueError("Le fichier ne contient pas une playlist XSPF valide.")
 
 		# Récupère les morceaux de la playlist
 		tracks = []

@@ -26,6 +26,9 @@ L'application permet de gérer une bibliothèque musicale composée de fichiers 
 - ouverture d'une playlist XSPF ;
 - récupération des morceaux MP3 et FLAC d'une playlist ;
 - refus d'un fichier XSPF inexistant ;
+- refus d'un fichier qui ne possède pas l'extension `.xspf` ;
+- refus d'un fichier contenant un XML invalide ;
+- refus d'un XML qui ne contient pas une playlist XSPF valide ;
 - première structure de l'interface graphique ;
 - tests automatiques.
 
@@ -89,7 +92,10 @@ Ces tests vérifient actuellement :
 - la sauvegarde d'une playlist avec un morceau ;
 - l'ouverture d'une playlist vide ;
 - la récupération d'un morceau MP3 ;
-- le refus d'un fichier inexistant.
+- le refus d'un fichier inexistant ;
+- le refus d'un fichier non-XSPF ;
+- le refus d'un XML invalide ;
+- le refus d'un contenu qui n'est pas une playlist XSPF valide.
 
 ### Tous les tests
 

@@ -116,6 +116,51 @@ class XspfServiceTests(unittest.TestCase):
 			):
 				XspfService().load_playlist(missing_file)
 
+	def test_load_non_xspf_file(self):
+		"""Vérifie le refus d'un fichier non-XSPF."""
+		with tempfile.TemporaryDirectory() as directory:
+			wrong_file = Path(directory) / "playlist.txt"
+			wrong_file.write_text("Ce fichier n'est pas une playlist.", encoding="utf-8")
+
+			print("\nFichier non-XSPF refusé :")
+			print(f"  Fichier : {wrong_file}")
+
+			with self.assertRaisesRegex(
+				ValueError,
+				"Le fichier doit être au format XSPF.",
+			):
+				XspfService().load_playlist(wrong_file)
+
+	def test_load_invalid_xml(self):
+		"""Vérifie le refus d'un XML invalide."""
+		with tempfile.TemporaryDirectory() as directory:
+			invalid_file = Path(directory) / "playlist.xspf"
+			invalid_file.write_text("<playlist>", encoding="utf-8")
+
+			print("\nXML invalide refusé :")
+			print(f"  Fichier : {invalid_file}")
+
+			with self.assertRaisesRegex(
+				ValueError,
+				"Le fichier XSPF contient un XML invalide.",
+			):
+				XspfService().load_playlist(invalid_file)
+
+	def test_load_invalid_xspf_content(self):
+		"""Vérifie le refus d'un contenu non-XSPF."""
+		with tempfile.TemporaryDirectory() as directory:
+			invalid_file = Path(directory) / "playlist.xspf"
+			invalid_file.write_text("<document></document>", encoding="utf-8")
+
+			print("\nContenu non-XSPF refusé :")
+			print(f"  Fichier : {invalid_file}")
+
+			with self.assertRaisesRegex(
+				ValueError,
+				"Le fichier ne contient pas une playlist XSPF valide.",
+			):
+				XspfService().load_playlist(invalid_file)
+
 
 if __name__ == "__main__":
 	unittest.main(verbosity=2)
