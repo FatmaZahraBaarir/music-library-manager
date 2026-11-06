@@ -24,12 +24,12 @@ L’exploration récursive, le filtrage par extension et type MIME ainsi que le 
 
 ## Priorité 2 — Réaliser entièrement le CLI
 
-Le dossier `src/cli/` est actuellement vide.
+Le parseur d’arguments existe ; les traitements de `-f`, `-d`, `-o` et `-p` restent à connecter aux services.
 
-- [ ] Créer le véritable point d’entrée, probablement `src/cli/main.py`.
-- [ ] Utiliser `argparse`.
-- [ ] Implémenter `-h` et `--help`.
-- [ ] Afficher une erreur utile lorsqu’aucun argument n’est fourni.
+- [x] Créer le véritable point d’entrée `src/cli/main.py`.
+- [x] Utiliser `argparse`.
+- [x] Implémenter `-h` et `--help`.
+- [x] Afficher une erreur utile lorsqu’aucun argument n’est fourni.
 - [ ] Implémenter `-f FICHIER` :
   - [ ] vérifier le fichier ;
   - [ ] extraire ses métadonnées ;
@@ -38,7 +38,7 @@ Le dossier `src/cli/` est actuellement vide.
   - [ ] explorer récursivement le dossier ;
   - [ ] afficher les morceaux trouvés ;
   - [ ] construire la playlist par défaut.
-- [ ] Rendre `-f` et `-d` mutuellement exclusifs.
+- [x] Rendre `-f` et `-d` mutuellement exclusifs.
 - [ ] Implémenter `-o FICHIER.xspf` avec `-d` pour choisir le fichier de sortie.
 - [ ] Si `-o` est absent, utiliser `default_playlist.xspf`.
 - [ ] Implémenter `-p FICHIER` en appelant le service de lecture audio réalisé par Fatma-Zahra.

@@ -78,7 +78,13 @@ La structure de la fenêtre existe, mais ses boutons ne sont pas encore tous rel
 
 ## Lancer le CLI
 
-Le CLI est encore en cours de développement. La commande de lancement sera ajoutée ici lorsqu'il sera utilisable.
+Le premier bloc du CLI gère les options et leurs incompatibilités :
+
+```bash
+python3 src/cli/main.py -h
+```
+
+Les options courtes demandées par le sujet sont `-f`, `-d`, `-o` et `-p`. Les traitements associés seront ajoutés progressivement.
 
 ## Lancer les tests
 
@@ -100,6 +106,12 @@ Ces tests vérifient actuellement :
 - le refus d'un contenu qui n'est pas une playlist XSPF valide.
 - la connexion entre `LibraryService` et `XspfService`.
 - l'exploration d'un dossier suivie de la création de la playlist par défaut.
+
+### Tests des arguments du CLI
+
+```bash
+python3 src/tests-auto/cli/test_cli_arguments.py -v
+```
 
 ### Tous les tests
 
