@@ -100,3 +100,22 @@ class LibraryInterface(ABC):
 		@rtype list de Track
 		"""
 		raise NotImplementedError
+
+	@abstractmethod
+	def create_playlist_from_directory(
+		self,
+		directory_path,
+		output_path="default_playlist.xspf",
+	):
+		"""Explore un dossier et sauvegarde la playlist XSPF obtenue."""
+		raise NotImplementedError
+
+	@abstractmethod
+	def save_playlist(self, playlist, output_path):
+		"""Sauvegarde une playlist dans un fichier XSPF."""
+		raise NotImplementedError
+
+	@abstractmethod
+	def load_playlist(self, file_path):
+		"""Ouvre une playlist depuis un fichier XSPF."""
+		raise NotImplementedError

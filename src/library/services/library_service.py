@@ -1,15 +1,14 @@
+from pathlib import Path
+
 from library.interfaces.library_interface import LibraryInterface
-from library.services.file.file_service import FileService
-from library.services.metadata.metadata_input_service import MetadataInputService
-from library.services.metadata.metadata_service import MetadataService
+from library.models.playlist import Playlist
 
 
 class LibraryService(LibraryInterface):
 	"""
 	@brief Centralise les fonctionnalités utilisées par le CLI et la GUI.
 
-	Cette façade délègue l'exploration à FileService et la gestion des
-	métadonnées à MetadataService.
+	Cette façade utilise les services de fichiers, de métadonnées et de playlists.
 	"""
 
 	def __init__(
@@ -17,6 +16,7 @@ class LibraryService(LibraryInterface):
 		file_service=None,
 		metadata_service=None,
 		metadata_input_service=None,
+		xspf_service=None,
 	):
 		"""
 		@brief Initialise la façade avec ses services techniques.
@@ -27,17 +27,26 @@ class LibraryService(LibraryInterface):
 		@type metadata_service MetadataService ou None
 		@param metadata_input_service Service de conversion des saisies, ou None.
 		@type metadata_input_service MetadataInputService ou None
+		@param xspf_service Service de playlists, ou None pour le service réel.
+		@type xspf_service XspfService ou None
 		"""
 		if file_service is None:
+			from library.services.file.file_service import FileService
 			file_service = FileService()
 		if metadata_service is None:
+			from library.services.metadata.metadata_service import MetadataService
 			metadata_service = MetadataService()
 		if metadata_input_service is None:
+			from library.services.metadata.metadata_input_service import MetadataInputService
 			metadata_input_service = MetadataInputService()
+		if xspf_service is None:
+			from library.services.playlist.xspf_service import XspfService
+			xspf_service = XspfService()
 
 		self.file_service = file_service
 		self.metadata_service = metadata_service
 		self.metadata_input_service = metadata_input_service
+		self.xspf_service = xspf_service
 
 	def find_audio_files(self, directory_path):
 		"""
@@ -133,3 +142,23 @@ class LibraryService(LibraryInterface):
 		"""
 		audio_files = self.find_audio_files(directory_path)
 		return [self.read_track(file_path) for file_path in audio_files]
+
+	def create_playlist_from_directory(
+		self,
+		directory_path,
+		output_path="default_playlist.xspf",
+	):
+		"""Explore un dossier puis sauvegarde les morceaux dans une playlist XSPF."""
+		output_path = Path(output_path)
+		tracks = self.scan_library(directory_path)
+		playlist = Playlist(output_path.stem, tracks=tracks)
+		self.save_playlist(playlist, output_path)
+		return playlist
+
+	def save_playlist(self, playlist, output_path):
+		"""Sauvegarde une playlist dans un fichier XSPF."""
+		return self.xspf_service.save_playlist(playlist, output_path)
+
+	def load_playlist(self, file_path):
+		"""Ouvre une playlist depuis un fichier XSPF."""
+		return self.xspf_service.load_playlist(file_path)

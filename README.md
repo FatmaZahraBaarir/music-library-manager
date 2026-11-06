@@ -29,6 +29,8 @@ L'application permet de gérer une bibliothèque musicale composée de fichiers 
 - refus d'un fichier qui ne possède pas l'extension `.xspf` ;
 - refus d'un fichier contenant un XML invalide ;
 - refus d'un XML qui ne contient pas une playlist XSPF valide ;
+- accès à la sauvegarde et à l'ouverture XSPF depuis `LibraryService` ;
+- génération automatique de `default_playlist.xspf` depuis un dossier exploré ;
 - première structure de l'interface graphique ;
 - tests automatiques.
 
@@ -96,6 +98,8 @@ Ces tests vérifient actuellement :
 - le refus d'un fichier non-XSPF ;
 - le refus d'un XML invalide ;
 - le refus d'un contenu qui n'est pas une playlist XSPF valide.
+- la connexion entre `LibraryService` et `XspfService`.
+- l'exploration d'un dossier suivie de la création de la playlist par défaut.
 
 ### Tous les tests
 
