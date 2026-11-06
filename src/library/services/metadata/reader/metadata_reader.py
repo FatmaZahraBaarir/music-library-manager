@@ -114,3 +114,37 @@ class MetadataReader:
 			)
 		except (MutagenError, OSError) as error:
 			raise ValueError("Impossible de lire les métadonnées FLAC.") from error
+
+	def read_mp3_duration(self, file_path):
+		"""
+		@brief Lit la durée d'un fichier MP3 validé.
+
+		@param file_path Chemin du fichier MP3.
+		@type file_path str ou pathlib.Path
+		@return Durée en secondes, ou None si elle est indisponible.
+		@rtype float ou None
+		@raise ValueError Si Mutagen ne peut pas lire le fichier.
+		"""
+		try:
+			audio = MP3(file_path)
+			length = getattr(audio.info, "length", None)
+			return float(length) if length is not None else None
+		except (MutagenError, OSError) as error:
+			raise ValueError("Impossible de lire la durée MP3.") from error
+
+	def read_flac_duration(self, file_path):
+		"""
+		@brief Lit la durée d'un fichier FLAC validé.
+
+		@param file_path Chemin du fichier FLAC.
+		@type file_path str ou pathlib.Path
+		@return Durée en secondes, ou None si elle est indisponible.
+		@rtype float ou None
+		@raise ValueError Si Mutagen ne peut pas lire le fichier.
+		"""
+		try:
+			audio = FLAC(file_path)
+			length = getattr(audio.info, "length", None)
+			return float(length) if length is not None else None
+		except (MutagenError, OSError) as error:
+			raise ValueError("Impossible de lire la durée FLAC.") from error
