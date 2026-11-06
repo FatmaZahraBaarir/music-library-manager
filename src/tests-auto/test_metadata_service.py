@@ -1,4 +1,6 @@
+import shutil
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -8,6 +10,7 @@ if str(SRC_DIRECTORY) not in sys.path:
 	sys.path.insert(0, str(SRC_DIRECTORY))
 
 from library.models.metadata import Metadata
+from library.models.track import AudioFormat, Track
 from library.services.file.filter.file_filtrer import FileFiltrer
 from library.services.metadata.metadata_service import MetadataService
 
@@ -20,9 +23,6 @@ FLAC_FILE = AUDIO_DIRECTORY / "sample.flac"
 class MetadataServiceIntegrationTests(unittest.TestCase):
 	"""
 	@brief Vérifie le service avec de vrais fichiers audio locaux.
-
-	Les tests sont ignorés tant que les fichiers sample.mp3 et sample.flac
-	ne sont pas présents dans le dossier fixtures/audio.
 	"""
 
 	def setUp(self):
@@ -30,6 +30,13 @@ class MetadataServiceIntegrationTests(unittest.TestCase):
 		@brief Crée le service utilisé par chaque test.
 		"""
 		self.metadata_service = MetadataService()
+		self.updated_metadata = Metadata(
+			title="Service test title",
+			artist="Service test artist",
+			album_title="Service test album",
+			track_number=9,
+			year=2026,
+		)
 
 	def display_metadata(self, file_path, metadata):
 		"""
@@ -49,10 +56,7 @@ class MetadataServiceIntegrationTests(unittest.TestCase):
 
 	def assert_metadata_was_extracted(self, metadata):
 		"""
-		@brief Vérifie le type des métadonnées, même si les tags sont absents.
-
-		Un fichier audio valide peut ne contenir aucun tag descriptif. Dans ce
-		cas, les attributs correspondants doivent valoir None.
+		@brief Vérifie les types, même si les tags sont absents.
 
 		@param metadata Métadonnées renvoyées par le service.
 		@type metadata Metadata
@@ -70,35 +74,102 @@ class MetadataServiceIntegrationTests(unittest.TestCase):
 		)
 		self.assertTrue(metadata.year is None or isinstance(metadata.year, int))
 
-	@unittest.skipUnless(
-		MP3_FILE.is_file(),
-		"Ajouter src/tests-auto/fixtures/audio/sample.mp3 pour activer ce test.",
-	)
+	def assert_updated_metadata(self, metadata):
+		"""
+		@brief Vérifie les tags sauvegardés par MetadataService.
+		"""
+		self.assertEqual(metadata.title, self.updated_metadata.title)
+		self.assertEqual(metadata.artist, self.updated_metadata.artist)
+		self.assertEqual(metadata.album_title, self.updated_metadata.album_title)
+		self.assertEqual(
+			metadata.track_number,
+			self.updated_metadata.track_number,
+		)
+		self.assertEqual(metadata.year, self.updated_metadata.year)
+
+	def create_temporary_copy(self, source_file, directory):
+		"""
+		@brief Crée une copie temporaire d'un fichier audio.
+		"""
+		copied_file = Path(directory) / f"service_{source_file.name}"
+		shutil.copy2(source_file, copied_file)
+		return copied_file
+
+	@unittest.skipUnless(MP3_FILE.is_file(), "Ajouter sample.mp3.")
 	def test_read_real_mp3_metadata(self):
 		"""
 		@brief Valide puis lit les métadonnées d'un vrai fichier MP3.
 		"""
 		self.assertTrue(FileFiltrer.is_mp3_file(MP3_FILE))
-
 		metadata = self.metadata_service.read_metadata(MP3_FILE)
-
 		self.display_metadata(MP3_FILE, metadata)
 		self.assert_metadata_was_extracted(metadata)
 
-	@unittest.skipUnless(
-		FLAC_FILE.is_file(),
-		"Ajouter src/tests-auto/fixtures/audio/sample.flac pour activer ce test.",
-	)
+	@unittest.skipUnless(FLAC_FILE.is_file(), "Ajouter sample.flac.")
 	def test_read_real_flac_metadata(self):
 		"""
 		@brief Valide puis lit les métadonnées d'un vrai fichier FLAC.
 		"""
 		self.assertTrue(FileFiltrer.is_flac_file(FLAC_FILE))
-
 		metadata = self.metadata_service.read_metadata(FLAC_FILE)
-
 		self.display_metadata(FLAC_FILE, metadata)
 		self.assert_metadata_was_extracted(metadata)
+
+	@unittest.skipUnless(MP3_FILE.is_file(), "Ajouter sample.mp3.")
+	def test_update_mp3_metadata_via_service(self):
+		"""
+		@brief Modifie tous les tags d'une copie MP3 via le service.
+		"""
+		with tempfile.TemporaryDirectory() as directory:
+			copied_file = self.create_temporary_copy(MP3_FILE, directory)
+			saved_metadata = self.metadata_service.update_metadata(
+				copied_file,
+				self.updated_metadata,
+			)
+			self.assert_updated_metadata(saved_metadata)
+
+	@unittest.skipUnless(FLAC_FILE.is_file(), "Ajouter sample.flac.")
+	def test_update_flac_metadata_via_service(self):
+		"""
+		@brief Modifie tous les tags d'une copie FLAC via le service.
+		"""
+		with tempfile.TemporaryDirectory() as directory:
+			copied_file = self.create_temporary_copy(FLAC_FILE, directory)
+			saved_metadata = self.metadata_service.update_metadata(
+				copied_file,
+				self.updated_metadata,
+			)
+			self.assert_updated_metadata(saved_metadata)
+
+	@unittest.skipUnless(MP3_FILE.is_file(), "Ajouter sample.mp3.")
+	def test_read_mp3_track_with_duration(self):
+		"""
+		@brief Construit un Track MP3 avec une durée positive.
+		"""
+		track = self.metadata_service.read_track(MP3_FILE)
+		self.assertIsInstance(track, Track)
+		self.assertEqual(track.file_path, MP3_FILE)
+		self.assertEqual(track.format, AudioFormat.MP3)
+		duration_seconds = track.duration_seconds
+		self.assertIsNotNone(duration_seconds)
+		if duration_seconds is not None:
+			self.assertGreater(duration_seconds, 0)
+		self.assertIsInstance(track.metadata, Metadata)
+
+	@unittest.skipUnless(FLAC_FILE.is_file(), "Ajouter sample.flac.")
+	def test_read_flac_track_with_duration(self):
+		"""
+		@brief Construit un Track FLAC avec une durée positive.
+		"""
+		track = self.metadata_service.read_track(FLAC_FILE)
+		self.assertIsInstance(track, Track)
+		self.assertEqual(track.file_path, FLAC_FILE)
+		self.assertEqual(track.format, AudioFormat.FLAC)
+		duration_seconds = track.duration_seconds
+		self.assertIsNotNone(duration_seconds)
+		if duration_seconds is not None:
+			self.assertGreater(duration_seconds, 0)
+		self.assertIsInstance(track.metadata, Metadata)
 
 
 if __name__ == "__main__":
