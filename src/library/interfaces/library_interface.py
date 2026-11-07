@@ -102,6 +102,21 @@ class LibraryInterface(ABC):
 		raise NotImplementedError
 
 	@abstractmethod
+	def create_empty_playlist(self, name):
+		"""Crée une playlist personnalisée sans morceau."""
+		raise NotImplementedError
+
+	@abstractmethod
+	def add_track_to_playlist(self, playlist, file_path):
+		"""Valide un fichier audio puis l'ajoute à la fin d'une playlist."""
+		raise NotImplementedError
+
+	@abstractmethod
+	def remove_track_from_playlist(self, playlist, position):
+		"""Retire et retourne le morceau situé à la position demandée."""
+		raise NotImplementedError
+
+	@abstractmethod
 	def create_playlist_from_directory(
 		self,
 		directory_path,

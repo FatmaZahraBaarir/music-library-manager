@@ -45,6 +45,8 @@ class FakeMetadataService:
 		self.tracks_by_path = tracks_by_path
 
 	def read_track(self, file_path):
+		if file_path not in self.tracks_by_path:
+			raise ValueError("Le fichier audio n'est pas valide.")
 		return self.tracks_by_path[file_path]
 
 
@@ -101,6 +103,72 @@ class PlaylistLibraryServiceTests(unittest.TestCase):
 			self.xspf_service.saved_data,
 			(playlist, Path("default_playlist.xspf")),
 		)
+
+	def test_create_empty_playlist(self):
+		"""Vérifie la création d'une playlist personnalisée vide."""
+		playlist = self.library_service.create_empty_playlist("Sport")
+
+		self.assertEqual(playlist.name, "Sport")
+		self.assertEqual(playlist.tracks, [])
+
+	def test_add_tracks_preserves_order_and_duplicates(self):
+		"""Vérifie l'ajout, l'ordre et l'autorisation des doublons."""
+		first_path = Path("music/first.mp3")
+		second_path = Path("music/second.flac")
+		first_track = object()
+		second_track = object()
+		service = LibraryService(
+			file_service=object(),
+			metadata_service=FakeMetadataService({
+				first_path: first_track,
+				second_path: second_track,
+			}),
+			metadata_input_service=object(),
+			xspf_service=self.xspf_service,
+		)
+		playlist = Playlist("Sport")
+
+		service.add_track_to_playlist(playlist, first_path)
+		service.add_track_to_playlist(playlist, second_path)
+		service.add_track_to_playlist(playlist, first_path)
+
+		self.assertEqual(
+			playlist.tracks,
+			[first_track, second_track, first_track],
+		)
+
+	def test_invalid_file_is_not_added(self):
+		"""Vérifie qu'un fichier invalide n'est pas ajouté à la playlist."""
+		service = LibraryService(
+			file_service=object(),
+			metadata_service=FakeMetadataService({}),
+			metadata_input_service=object(),
+			xspf_service=self.xspf_service,
+		)
+		playlist = Playlist("Sport")
+
+		with self.assertRaises(ValueError):
+			service.add_track_to_playlist(playlist, Path("notes.txt"))
+
+		self.assertEqual(playlist.tracks, [])
+
+	def test_remove_track_uses_its_position(self):
+		"""Vérifie le retrait d'un morceau sans modifier l'ordre restant."""
+		first_track = object()
+		second_track = object()
+		third_track = object()
+		playlist = Playlist(
+			"Sport",
+			tracks=[first_track, second_track, third_track],
+		)
+
+		removed_track = self.library_service.remove_track_from_playlist(
+			playlist,
+			1,
+		)
+
+		self.assertIs(removed_track, second_track)
+		self.assertEqual(playlist.tracks, [first_track, third_track])
 
 
 if __name__ == "__main__":

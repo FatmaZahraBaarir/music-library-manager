@@ -143,6 +143,51 @@ class LibraryService(LibraryInterface):
 		audio_files = self.find_audio_files(directory_path)
 		return [self.read_track(file_path) for file_path in audio_files]
 
+	def create_empty_playlist(self, name):
+		"""
+		@brief Crée une playlist personnalisée sans morceau.
+
+		@param name Nom de la nouvelle playlist.
+		@type name str
+		@return Playlist vide portant le nom demandé.
+		@rtype Playlist
+		"""
+		return Playlist(name)
+
+	def add_track_to_playlist(self, playlist, file_path):
+		"""
+		@brief Valide un fichier audio puis l'ajoute à la fin d'une playlist.
+
+		Les doublons sont acceptés et l'ordre d'ajout est conservé.
+
+		@param playlist Playlist à modifier.
+		@type playlist Playlist
+		@param file_path Chemin du fichier MP3 ou FLAC à ajouter.
+		@type file_path str ou pathlib.Path
+		@return Morceau ajouté à la playlist.
+		@rtype Track
+		@raise ValueError Si le fichier n'est pas un MP3 ou un FLAC valide.
+		"""
+		# read_track vérifie le format avant de construire le morceau
+		track = self.read_track(file_path)
+		playlist.tracks.append(track)
+
+		return track
+
+	def remove_track_from_playlist(self, playlist, position):
+		"""
+		@brief Retire un morceau d'une playlist selon sa position.
+
+		@param playlist Playlist à modifier.
+		@type playlist Playlist
+		@param position Position du morceau dans la playlist.
+		@type position int
+		@return Morceau retiré de la playlist.
+		@rtype Track
+		@raise IndexError Si la position n'existe pas.
+		"""
+		return playlist.tracks.pop(position)
+
 	def create_playlist_from_directory(
 		self,
 		directory_path,

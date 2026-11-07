@@ -32,6 +32,7 @@ L'application permet de gérer une bibliothèque musicale composée de fichiers 
 - accès à la sauvegarde et à l'ouverture XSPF depuis `LibraryService` ;
 - génération automatique de `default_playlist.xspf` depuis un dossier exploré ;
 - affichage des métadonnées d'un fichier MP3 ou FLAC avec l'option CLI `-f` ;
+- création d'une playlist vide, ajout et retrait de morceaux ;
 - première structure de l'interface graphique ;
 - tests automatiques.
 
@@ -165,6 +166,16 @@ Il permet de :
 - enregistrer les chemins des morceaux au format `file:///...` ;
 - ouvrir un fichier `.xspf` ;
 - recréer les objets `Track` correspondant aux morceaux.
+
+## Gestion des playlists personnalisées
+
+`LibraryService` fournit trois méthodes utilisables par l'interface graphique :
+
+- `create_empty_playlist` pour créer une playlist vide ;
+- `add_track_to_playlist` pour vérifier puis ajouter un MP3 ou un FLAC ;
+- `remove_track_from_playlist` pour retirer un morceau selon sa position.
+
+L'ordre d'ajout est conservé et les doublons sont autorisés.
 
 ## État du projet
 
