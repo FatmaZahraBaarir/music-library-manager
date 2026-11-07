@@ -10,3 +10,7 @@ venv/
 # Fichiers audio utilisés uniquement pour les tests locaux
 src/tests-auto/fixtures/audio/*.mp3
 src/tests-auto/fixtures/audio/*.flac
+
+# Échantillons synthétiques partagés pour exécuter les tests
+!src/tests-auto/fixtures/audio/sample.mp3
+!src/tests-auto/fixtures/audio/sample.flac

@@ -31,13 +31,13 @@ L'application permet de gérer une bibliothèque musicale composée de fichiers 
 - refus d'un XML qui ne contient pas une playlist XSPF valide ;
 - accès à la sauvegarde et à l'ouverture XSPF depuis `LibraryService` ;
 - génération automatique de `default_playlist.xspf` depuis un dossier exploré ;
+- affichage des métadonnées d'un fichier MP3 ou FLAC avec l'option CLI `-f` ;
 - première structure de l'interface graphique ;
 - tests automatiques.
 
 ## Fonctionnalités encore en cours
 
 - CLI complet avec les options demandées ;
-- création automatique de `default_playlist.xspf` ;
 - validation complète des fichiers XSPF ;
 - ajout de morceaux par glisser-déposer ;
 - branchement des boutons de l'interface graphique ;
@@ -61,10 +61,22 @@ Il est conseillé d'utiliser un environnement virtuel :
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-python3 -m pip install mutagen python-magic
+python3 -m pip install -r requirements.txt
 ```
 
-Selon le système, `tkinter` et la bibliothèque système `libmagic` peuvent aussi être nécessaires.
+Sur macOS avec Homebrew, la bibliothèque système utilisée par `python-magic` s'installe avec :
+
+```bash
+brew install libmagic
+```
+
+Si Python ne trouve pas cette bibliothèque, ajouter son dossier avant l'exécution :
+
+```bash
+export DYLD_LIBRARY_PATH="/opt/homebrew/opt/libmagic/lib"
+```
+
+Selon le système, `tkinter` peut aussi être nécessaire.
 
 ## Lancer l'interface graphique
 
@@ -78,15 +90,16 @@ La structure de la fenêtre existe, mais ses boutons ne sont pas encore tous rel
 
 ## Lancer le CLI
 
-Le CLI gère les options, leurs incompatibilités et la création d'une playlist depuis un dossier :
+Le CLI lit les métadonnées d'un fichier et crée une playlist depuis un dossier :
 
 ```bash
 python3 src/cli/main.py -h
+python3 src/cli/main.py -f ./music/song.mp3
 python3 src/cli/main.py -d ./music/
 python3 src/cli/main.py -d ./music/ -o playlist.xspf
 ```
 
-Les options courtes demandées par le sujet sont `-f`, `-d`, `-o` et `-p`. Les traitements de `-f` et `-p` restent à ajouter.
+Les options courtes demandées par le sujet sont `-f`, `-d`, `-o` et `-p`. Le traitement de `-p` reste à ajouter.
 
 ## Lancer les tests
 
@@ -119,9 +132,10 @@ python3 -m unittest discover -s src/tests-auto/cli -p "test_*.py" -v
 
 ```bash
 python3 -m unittest discover -s src/tests-auto -p "test_*.py" -v
+python3 -m unittest discover -s src/tests-auto/cli -p "test_*.py" -v
 ```
 
-Les tests utilisant de vrais fichiers audio demandent des fichiers locaux `sample.mp3` et `sample.flac` dans `src/tests-auto/fixtures/audio/`. Ces fichiers ne sont pas envoyés sur GitHub.
+Les fichiers synthétiques `sample.mp3` et `sample.flac` sont fournis dans `src/tests-auto/fixtures/audio/`. Ils permettent de tester les métadonnées, la durée et les types MIME `audio/mpeg` et `audio/flac` sans ajouter de musique protégée au dépôt.
 
 ## Organisation du projet
 
@@ -133,6 +147,7 @@ music-library-manager/
 │   ├── gui/           # Interface graphique
 │   └── tests-auto/    # Tests automatiques
 ├── doc/               # Documents du projet
+├── requirements.txt   # Dépendances Python
 └── README.md
 ```
 

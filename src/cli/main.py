@@ -102,6 +102,37 @@ def process_directory(args, library_service):
 	return 0
 
 
+def process_file(args, library_service):
+	"""
+	@brief Lit et affiche les métadonnées du fichier audio demandé.
+
+	@param args Arguments contenant le chemin du fichier audio.
+	@type args argparse.Namespace
+	@param library_service Service principal de la bibliothèque musicale.
+	@type library_service LibraryInterface
+	@return Code de succès du traitement.
+	@rtype int
+	"""
+	# Utilise le service commun au CLI et à la GUI pour lire le fichier
+	metadata = library_service.read_metadata(args.file)
+
+	# Remplace les informations absentes par un message lisible
+	title = metadata.title or "Non renseigné"
+	artist = metadata.artist or "Non renseigné"
+	album_title = metadata.album_title or "Non renseigné"
+	track_number = metadata.track_number or "Non renseigné"
+	year = metadata.year or "Non renseigné"
+
+	print(f"Fichier : {args.file}")
+	print(f"Titre : {title}")
+	print(f"Artiste : {artist}")
+	print(f"Album : {album_title}")
+	print(f"Piste : {track_number}")
+	print(f"Année : {year}")
+
+	return 0
+
+
 def main(arguments=None, library_service=None):
 	"""
 	@brief Lance le programme en ligne de commande.
@@ -115,22 +146,20 @@ def main(arguments=None, library_service=None):
 	"""
 	args = parse_arguments(arguments)
 
-	if args.directory:
+	if args.file or args.directory:
 		try:
 			if library_service is None:
 				from library.services.library_service import LibraryService
 				library_service = LibraryService()
-			return process_directory(args, library_service)
+			if args.directory:
+				return process_directory(args, library_service)
+			return process_file(args, library_service)
 		except ImportError as error:
 			print(f"Erreur : dépendance Python absente ({error}).", file=sys.stderr)
 			return 1
 		except (OSError, ValueError) as error:
 			print(f"Erreur : {error}", file=sys.stderr)
 			return 1
-
-	if args.file:
-		print("Erreur : l'option -f n'est pas encore implémentée.", file=sys.stderr)
-		return 1
 
 	print("Erreur : l'option -p n'est pas encore implémentée.", file=sys.stderr)
 	return 1

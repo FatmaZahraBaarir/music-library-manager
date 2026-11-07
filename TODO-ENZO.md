@@ -1,6 +1,6 @@
 # TODO — Partie d’Enzo
 
-> État vérifié le 6 novembre 2026 sur la branche `CLI_V1`.
+> État vérifié le 7 novembre 2026 sur la branche `CLI_V1`.
 
 L’exploration récursive, le filtrage par extension et type MIME ainsi que le modèle `Playlist` de base existent déjà. Il ne faut pas les refaire.
 
@@ -24,23 +24,23 @@ L’exploration récursive, le filtrage par extension et type MIME ainsi que le 
 
 ## Priorité 2 — Réaliser entièrement le CLI
 
-Le parseur d’arguments existe ; les traitements de `-f`, `-d`, `-o` et `-p` restent à connecter aux services.
+Le parseur d’arguments existe. `-f`, `-d` et `-o` sont connectés aux services ; `-p` reste à connecter.
 
 - [x] Créer le véritable point d’entrée `src/cli/main.py`.
 - [x] Utiliser `argparse`.
 - [x] Implémenter `-h` et `--help`.
 - [x] Afficher une erreur utile lorsqu’aucun argument n’est fourni.
-- [ ] Implémenter `-f FICHIER` :
-  - [ ] vérifier le fichier ;
-  - [ ] extraire ses métadonnées ;
-  - [ ] les afficher clairement dans le terminal.
-- [ ] Implémenter `-d DOSSIER` :
-  - [ ] explorer récursivement le dossier ;
-  - [ ] afficher les morceaux trouvés ;
-  - [ ] construire la playlist par défaut.
+- [x] Implémenter `-f FICHIER` :
+  - [x] vérifier le fichier ;
+  - [x] extraire ses métadonnées ;
+  - [x] les afficher clairement dans le terminal.
+- [x] Implémenter `-d DOSSIER` :
+  - [x] explorer récursivement le dossier ;
+  - [x] afficher les morceaux trouvés ;
+  - [x] construire la playlist par défaut.
 - [x] Rendre `-f` et `-d` mutuellement exclusifs.
-- [ ] Implémenter `-o FICHIER.xspf` avec `-d` pour choisir le fichier de sortie.
-- [ ] Si `-o` est absent, utiliser `default_playlist.xspf`.
+- [x] Implémenter `-o FICHIER.xspf` avec `-d` pour choisir le fichier de sortie.
+- [x] Si `-o` est absent, utiliser `default_playlist.xspf`.
 - [ ] Implémenter `-p FICHIER` en appelant le service de lecture audio réalisé par Fatma-Zahra.
 - [ ] Gérer les chemins inexistants, les mauvais formats et les options incompatibles sans afficher de traceback brut.
 - [ ] Tester les scénarios demandés dans le sujet :
@@ -84,21 +84,21 @@ Enzo fournit la logique de playlist exploitable par la GUI. La construction de l
   - [ ] ouvrir une playlist ;
   - [ ] sauvegarder une playlist ;
   - [ ] ajouter ou retirer un morceau.
-- [ ] Faire tester au moins un vrai MP3 et un vrai FLAC.
-- [ ] Vérifier que le dépôt contient une déclaration des dépendances nécessaires, notamment `mutagen` et la bibliothèque fournissant `magic`.
-- [ ] Relancer tous les tests dans l’environnement du projet.
+- [x] Faire tester au moins un vrai MP3 et un vrai FLAC.
+- [x] Vérifier que le dépôt contient une déclaration des dépendances nécessaires, notamment `mutagen` et la bibliothèque fournissant `magic`.
+- [x] Relancer tous les tests dans l’environnement du projet.
 
-## Blocage actuellement constaté
+## Environnement vérifié
 
-Les tests ne démarrent pas dans l’environnement Hermes parce que le module `magic` manque. Les cinq modules de tests échouent dès l’import. Cela ne prouve pas que le code est incorrect, mais la suite complète ne peut pas encore être validée dans cet environnement.
+Les dépendances Python sont déclarées dans `requirements.txt`. Sur macOS, `libmagic` est installé avec Homebrew. Dans l’environnement Hermes, son dossier doit être exposé avec `DYLD_LIBRARY_PATH=/opt/homebrew/opt/libmagic/lib`. Les 37 tests principaux et les 11 tests CLI passent avec les deux samples synthétiques suivis par Git.
 
 ## Ordre de travail immédiat
 
 1. [x] Service XSPF et ses tests.
 2. [x] Sauvegarde de `default_playlist.xspf`.
-3. [ ] Ouverture et validation XSPF.
-4. [ ] CLI : `-f`, `-d`, `-o`, aide et erreurs.
+3. [x] Ouverture et validation locale XSPF.
+4. [x] CLI : `-f`, `-d`, `-o`, aide et erreurs.
 5. [ ] Connexion de `-p` au lecteur audio de Fatma-Zahra.
 6. [ ] Logique métier du drag & drop.
 7. [ ] Intégration avec la GUI de Sanaa.
-8. [ ] Tests complets sur de vrais fichiers.
+8. [x] Tests complets sur des fichiers MP3 et FLAC synthétiques.
