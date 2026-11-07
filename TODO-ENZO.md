@@ -18,7 +18,7 @@ L’exploration récursive, le filtrage par extension et type MIME ainsi que le 
   - [x] un fichier non-XSPF ;
   - [x] un XML invalide ;
   - [x] une playlist contenant des données incorrectes.
-- [ ] Valider les fichiers générés avec <https://validator.xspf.org/>.
+- [x] Valider les fichiers générés avec <https://validator.xspf.org/> (résultat officiel : `Valid`).
 - [x] Ajouter les méthodes nécessaires dans `LibraryInterface` et `LibraryService`.
 - [x] Écrire les tests automatiques de sauvegarde, d’ouverture et d’erreurs XSPF.
 
