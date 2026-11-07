@@ -135,7 +135,7 @@ python3 -m unittest discover -s src/tests-auto -p "test_*.py" -v
 python3 -m unittest discover -s src/tests-auto/cli -p "test_*.py" -v
 ```
 
-Les fichiers synthétiques `sample.mp3` et `sample.flac` sont fournis dans `src/tests-auto/fixtures/audio/`. Ils permettent de tester les métadonnées, la durée et les types MIME `audio/mpeg` et `audio/flac` sans ajouter de musique protégée au dépôt.
+Deux fichiers audio de test sont disponibles dans `src/tests-auto/fixtures/audio/` : `sample.mp3` et `sample.flac`. Ils servent à tester les formats MP3 et FLAC ainsi que la lecture et la modification des métadonnées.
 
 ## Organisation du projet
 
