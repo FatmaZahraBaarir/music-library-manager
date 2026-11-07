@@ -7,6 +7,9 @@ __pycache__/
 venv/
 .env
 
+# Fichier de suivi personnel
+TODO-ENZO.md
+
 # Fichiers audio utilisés uniquement pour les tests locaux
 src/tests-auto/fixtures/audio/*.mp3
 src/tests-auto/fixtures/audio/*.flac
