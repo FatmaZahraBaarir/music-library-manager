@@ -1,4 +1,1 @@
-from library.services.library_service import LibraryService
-
-
-__all__ = ["LibraryService"]
+"""Regroupe les services utilisés par le projet."""
