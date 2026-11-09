@@ -33,6 +33,9 @@ L'application permet de gérer une bibliothèque musicale composée de fichiers 
 - génération automatique de `default_playlist.xspf` depuis un dossier exploré ;
 - affichage des métadonnées d'un fichier MP3 ou FLAC avec l'option CLI `-f` ;
 - création d'une playlist vide, ajout et retrait de morceaux ;
+- lecture audio des morceaux MP3 et FLAC via `AudioService` ;
+- pause, reprise et arrêt de la lecture ;
+- progression ordonnée d'une playlist via le thread principal du CLI ou de la GUI ;
 - première structure de l'interface graphique ;
 - tests automatiques.
 
@@ -42,7 +45,7 @@ L'application permet de gérer une bibliothèque musicale composée de fichiers 
 - validation complète des fichiers XSPF ;
 - ajout de morceaux par glisser-déposer ;
 - branchement des boutons de l'interface graphique ;
-- lecture audio ;
+- branchement de la lecture audio au CLI et à la GUI ;
 - récupération des informations d'album, des paroles et des pochettes.
 
 ## Dépendances
@@ -52,6 +55,7 @@ Le projet utilise :
 - Python 3 ;
 - `mutagen` pour les métadonnées MP3 et FLAC ;
 - `python-magic` pour vérifier le type MIME des fichiers ;
+- `pygame-ce` pour lire, mettre en pause et arrêter les fichiers audio ;
 - `tkinter` pour l'interface graphique ;
 - `xml.etree.ElementTree`, fourni avec Python, pour créer et lire les fichiers XML/XSPF.
 

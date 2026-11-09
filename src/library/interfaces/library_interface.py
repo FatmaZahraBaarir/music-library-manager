@@ -134,3 +134,38 @@ class LibraryInterface(ABC):
 	def load_playlist(self, file_path):
 		"""Ouvre une playlist depuis un fichier XSPF."""
 		raise NotImplementedError
+
+	@abstractmethod
+	def play_track(self, file_path):
+		"""Valide puis démarre la lecture d'un fichier audio."""
+		raise NotImplementedError
+
+	@abstractmethod
+	def play_playlist(self, playlist):
+		"""Valide puis démarre la lecture d'une playlist."""
+		raise NotImplementedError
+
+	@abstractmethod
+	def update_playlist_playback(self):
+		"""Met à jour la lecture d'une playlist depuis le thread principal."""
+		raise NotImplementedError
+
+	@abstractmethod
+	def pause_playback(self):
+		"""Met la lecture audio en pause."""
+		raise NotImplementedError
+
+	@abstractmethod
+	def resume_playback(self):
+		"""Reprend la lecture audio mise en pause."""
+		raise NotImplementedError
+
+	@abstractmethod
+	def stop_playback(self):
+		"""Arrête la lecture audio en cours."""
+		raise NotImplementedError
+
+	@abstractmethod
+	def is_playing(self):
+		"""Indique si une lecture audio est active."""
+		raise NotImplementedError
