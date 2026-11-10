@@ -9,6 +9,8 @@ from gui.sidebar import Sidebar
 from gui.player_bar import PlayerBar
 from gui.library_view import LibraryView
 from gui.metadata_dialog import MetadataForm
+from gui.playlist_dialog import PlaylistDialog
+from gui.playlist_button import PlaylistButton
 
 class MainWindow:
 	"""
@@ -29,7 +31,17 @@ class MainWindow:
 
 		# Liste des fichiers ouverts et morceau sélectionné.
 		self.audio_files = []
+
+		# Fichiers à retrouver lors du retour à l'accueil.
+		self.fichiersBibliotheque = []
+
 		self.selected_track = None
+
+		# Playlist en cours de création ou de modification.
+		self.playlist = None
+
+		# Playlists créées ou ouvertes pendant l'utilisation de l'application.
+		self.playlists = []
 
 		self.fenetre.title("Gestionnaire de bibliothèque musicale")
 		self.fenetre.geometry("1200x750")
@@ -42,7 +54,8 @@ class MainWindow:
 		# Menu à gauche.
 		self.cadreMenu = tk.Frame(self.fenetre, bg="#f1f5f9", width=200)
 		self.cadreMenu.pack(side=tk.LEFT, fill=tk.Y)
-		self.sidebar = Sidebar(self.cadreMenu, self.on_open_folder, self.on_open_file)
+		self.sidebar = Sidebar(self.cadreMenu, self.on_open_folder, self.on_open_file, self.on_create_playlist,
+		                       self.on_load_playlist, self.on_home)
 
 		# Cadre contenant la bibliothèque et les métadonnées.
 		self.cadrePrincipal = tk.Frame(self.fenetre, bg="#ffffff")
@@ -78,7 +91,7 @@ class MainWindow:
 
 	def on_open_file(self):
 		"""
-		@brief Ajoute le fichier choisi à la liste affichée.
+		@brief Affiche le fichier choisi dans la bibliothèque.
 		"""
 		# Choix d'un fichier audio.
 		cheminFichier = filedialog.askopenfilename(parent=self.fenetre, title="Choisir un morceau", filetypes=[("Fichiers MP3", "*.mp3"), ("Fichiers FLAC", "*.flac")])
@@ -87,8 +100,12 @@ class MainWindow:
 		if cheminFichier == "":
 			return
 
+		# Retour à la bibliothèque.
+		self.show_library()
+
 		# Affichage du fichier choisi.
 		self.audio_files = [cheminFichier]
+		self.fichiersBibliotheque = self.audio_files.copy()
 		self.library_view.files_list.delete(0, tk.END)
 		self.library_view.files_list.insert(tk.END, cheminFichier)
 
@@ -114,7 +131,11 @@ class MainWindow:
 			self.metadata_message.set(str(erreur))
 			return
 
+		# Retour à la bibliothèque.
+		self.show_library()
+
 		self.audio_files = fichiersAudio
+		self.fichiersBibliotheque = self.audio_files.copy()
 
 		# Effacement de la liste et des informations précédentes.
 		self.library_view.files_list.delete(0, tk.END)
@@ -201,3 +222,202 @@ class MainWindow:
 		# Mise à jour des métadonnées gardées en mémoire.
 		self.selected_track.metadata = metadata
 		self.metadata_message.set("Métadonnées enregistrées.")
+
+	def on_create_playlist(self):
+		"""
+		@brief Affiche le formulaire de création au centre.
+		"""
+		# Remplacement de la bibliothèque par le formulaire.
+		self.cadreBibliotheque.destroy()
+		self.cadreBibliotheque = tk.Frame(self.cadrePrincipal, bg="#ffffff")
+		self.cadreBibliotheque.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=15, pady=10)
+
+		self.playlist_form = PlaylistDialog(self.cadreBibliotheque, self.library_service, self.on_playlist_created,
+		                                    self.on_home)
+
+	def show_library(self):
+		"""
+		@brief Affiche la bibliothèque à la place du formulaire.
+		"""
+		# Reconstruction de la liste centrale.
+		self.cadreBibliotheque.destroy()
+		self.cadreBibliotheque = tk.Frame(self.cadrePrincipal, bg="#ffffff")
+		self.cadreBibliotheque.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=15, pady=10)
+
+		self.library_view = LibraryView(self.cadreBibliotheque, self.on_file_selected)
+
+		# Affichage des fichiers déjà ouverts.
+		for cheminFichier in self.audio_files:
+			self.library_view.files_list.insert(tk.END, str(cheminFichier))
+
+	def on_playlist_created(self, playlist):
+		"""
+		@brief Conserve la playlist et ajoute son bouton au menu.
+
+		@param playlist Nouvelle playlist.
+		@type playlist Playlist
+		"""
+		self.playlists.append(playlist)
+		self.playlist = playlist
+
+		# Effacement du message affiché avant la première création.
+		self.sidebar.empty_playlists_label.config(text="")
+
+		# Ajout du bouton permettant d'ouvrir cette playlist.
+		PlaylistButton(self.sidebar.cadrePlaylists, playlist, self.on_open_playlist)
+
+		# Affichage des morceaux après la création.
+		self.on_open_playlist(playlist)
+
+	def on_open_playlist(self, playlist):
+		"""
+		@brief Affiche les morceaux de la playlist au centre.
+
+		@param playlist Playlist à afficher.
+		@type playlist Playlist
+		"""
+		self.playlist = playlist
+
+		# Récupération des fichiers de la playlist.
+		self.audio_files = []
+		for morceau in playlist.tracks:
+			self.audio_files.append(morceau.file_path)
+
+		# Effacement des informations du morceau précédent.
+		self.selected_track = None
+		self.metadata_form.clear_fields()
+		self.metadata_message.set("Aucun morceau sélectionné")
+
+		# Affichage des morceaux au centre.
+		self.show_library()
+		self.library_view.files_label.config(text=playlist.name)
+		self.library_view.instructions_label.config(text="Sélectionnez un morceau, puis cliquez sur « Afficher les métadonnées ».")
+
+		# Ajout d'un morceau à la playlist.
+		self.ajouter_morceau_button = tk.Button(self.library_view.cadreBoutons, text="Ajouter un morceau",
+		                                        command=self.on_add_track)
+		self.ajouter_morceau_button.pack(side=tk.LEFT, padx=5)
+
+		# Retrait du morceau sélectionné dans la playlist.
+		self.retirer_morceau_button = tk.Button(self.library_view.cadreBoutons, text="Retirer le morceau", command=self.on_remove_track)
+		self.retirer_morceau_button.pack(side=tk.LEFT, padx=5)
+
+		# Enregistrement de la playlist.
+		self.enregistrer_playlist_button = tk.Button(self.library_view.cadreBoutons, text="Enregistrer la playlist",
+		                                             command=self.on_save_playlist)
+		self.enregistrer_playlist_button.pack(side=tk.LEFT, padx=5)
+
+	def on_save_playlist(self):
+		"""
+		@brief Enregistre la playlist dans un fichier XSPF.
+		"""
+		if self.playlist is None:
+			messagebox.showwarning("Aucune playlist", "Créez ou ouvrez une playlist avant d'enregistrer.", parent=self.fenetre)
+			return
+
+		# Choix de l'emplacement du fichier.
+		cheminPlaylist = filedialog.asksaveasfilename(parent=self.fenetre, title="Enregistrer la playlist", defaultextension=".xspf", filetypes=[("Playlist XSPF", "*.xspf")])
+
+		if cheminPlaylist == "":
+			return
+
+		# Enregistrement par le service.
+		try:
+			self.library_service.save_playlist(self.playlist, cheminPlaylist)
+		except (ValueError, OSError) as erreur:
+			messagebox.showwarning("Enregistrement impossible", str(erreur), parent=self.fenetre)
+			return
+
+		messagebox.showinfo("Playlist enregistrée", "La playlist a été enregistrée.", parent=self.fenetre)
+
+
+	def on_load_playlist(self):
+		"""
+		@brief Ouvre une playlist enregistrée dans un fichier XSPF.
+		"""
+		# Choix du fichier playlist.
+		cheminPlaylist = filedialog.askopenfilename(parent=self.fenetre, title="Ouvrir une playlist", filetypes=[("Playlist XSPF", "*.xspf")])
+
+		if cheminPlaylist == "":
+			return
+
+		# Affichage de la playlist si ce fichier est déjà ouvert.
+		for playlistOuverte in self.playlists:
+			if str(playlistOuverte.file_path) == cheminPlaylist:
+				self.on_open_playlist(playlistOuverte)
+				return
+
+		# Lecture de la playlist par le service.
+		try:
+			playlist = self.library_service.load_playlist(cheminPlaylist)
+		except (ValueError, OSError) as erreur:
+			messagebox.showwarning("Ouverture impossible", str(erreur), parent=self.fenetre)
+			return
+
+		# Ajout au menu et affichage des morceaux.
+		self.on_playlist_created(playlist)
+
+
+	def on_home(self):
+		"""
+		@brief Revient aux fichiers de la bibliothèque.
+		"""
+		# Récupération des fichiers ouverts avant la playlist.
+		self.audio_files = self.fichiersBibliotheque.copy()
+
+		# Effacement des informations du morceau précédent.
+		self.selected_track = None
+		self.metadata_form.clear_fields()
+		self.metadata_message.set("Aucun morceau sélectionné")
+
+		# Retour à la bibliothèque au centre.
+		self.show_library()
+
+
+	def on_add_track(self):
+		"""
+		@brief Ajoute un fichier audio à la playlist affichée.
+		"""
+		if self.playlist is None:
+			return
+
+		# Choix du morceau à ajouter.
+		cheminFichier = filedialog.askopenfilename(parent=self.fenetre, title="Ajouter un morceau", filetypes=[("Fichiers MP3", "*.mp3"), ("Fichiers FLAC", "*.flac")])
+
+		if cheminFichier == "":
+			return
+
+		# Vérification et ajout du morceau par le service.
+		try:
+			self.library_service.add_track_to_playlist(self.playlist, cheminFichier)
+		except ValueError as erreur:
+			messagebox.showwarning("Ajout impossible", str(erreur), parent=self.fenetre)
+			return
+
+		# Actualisation des morceaux affichés.
+		self.on_open_playlist(self.playlist)
+
+
+	def on_remove_track(self):
+		"""
+		@brief Retire le morceau sélectionné de la playlist.
+		"""
+		if self.playlist is None:
+			return
+
+		# Position du morceau choisi dans la liste.
+		selection = self.library_view.files_list.curselection()
+
+		if len(selection) == 0:
+			messagebox.showwarning("Aucun morceau sélectionné", "Sélectionnez un morceau à retirer.", parent=self.fenetre)
+			return
+
+		# Retrait de la playlist sans supprimer le fichier audio.
+		try:
+			self.library_service.remove_track_from_playlist(self.playlist, selection[0])
+		except IndexError:
+			messagebox.showwarning("Retrait impossible", "Le morceau sélectionné n'existe plus dans la playlist.", parent=self.fenetre)
+			return
+
+		# Actualisation de la liste affichée.
+		self.on_open_playlist(self.playlist)
