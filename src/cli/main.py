@@ -1,5 +1,6 @@
 import argparse
 import sys
+import time
 from pathlib import Path
 
 
@@ -174,6 +175,29 @@ def process_file(args, library_service):
 	return 0
 
 
+def process_play(args, library_service):
+	"""Démarre un fichier audio et garde le CLI actif jusqu'à sa fin."""
+	file_path = args.play
+
+	try:
+		library_service.play_track(file_path)
+		print(f"Lecture en cours : {file_path}")
+
+		# Vérifie si le morceau est encore en cours
+		playback_in_progress = library_service.is_playing()
+		while playback_in_progress:
+			time.sleep(0.1)
+			playback_in_progress = library_service.is_playing()
+
+	except KeyboardInterrupt:
+		library_service.stop_playback()
+		print("Lecture arrêtée.")
+		return 0
+
+	print("Lecture terminée.")
+	return 0
+
+
 def main(arguments=None, library_service=None):
 	"""
 	@brief Lance le programme en ligne de commande.
@@ -187,14 +211,19 @@ def main(arguments=None, library_service=None):
 	"""
 	args = parse_arguments(arguments)
 
-	if args.file or args.directory:
+	if args.file or args.directory or args.play:
 		try:
 			if library_service is None:
 				from library.services.library_service import LibraryService
 				library_service = LibraryService()
 			if args.directory:
 				return process_directory(args, library_service)
-			return process_file(args, library_service)
+
+			if args.file:
+				return process_file(args, library_service)
+
+			if args.play:
+				return process_play(args, library_service)
 		except ImportError as error:
 			print(f"Erreur : dépendance Python absente ({error}).", file=sys.stderr)
 			return 1
@@ -202,8 +231,7 @@ def main(arguments=None, library_service=None):
 			print(f"Erreur : {error}", file=sys.stderr)
 			return 1
 
-	print("Erreur : l'option -p n'est pas encore implémentée.", file=sys.stderr)
-	return 1
+	return 0
 
 
 if __name__ == "__main__":

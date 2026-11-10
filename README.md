@@ -32,6 +32,7 @@ L'application permet de gérer une bibliothèque musicale composée de fichiers 
 - accès à la sauvegarde et à l'ouverture XSPF depuis `LibraryService` ;
 - génération automatique de `default_playlist.xspf` depuis un dossier exploré ;
 - affichage et modification des métadonnées d'un fichier MP3 ou FLAC avec l'option CLI `-f` ;
+- lecture d'un fichier MP3 ou FLAC avec l'option CLI `-p` ;
 - création d'une playlist vide, ajout et retrait de morceaux ;
 - première structure de l'interface graphique ;
 - tests automatiques.
@@ -42,7 +43,6 @@ L'application permet de gérer une bibliothèque musicale composée de fichiers 
 - validation complète des fichiers XSPF ;
 - ajout de morceaux par glisser-déposer ;
 - branchement des boutons de l'interface graphique ;
-- lecture audio ;
 - récupération des informations d'album, des paroles et des pochettes.
 
 ## Dépendances
@@ -52,6 +52,7 @@ Le projet utilise :
 - Python 3 ;
 - `mutagen` pour les métadonnées MP3 et FLAC ;
 - `python-magic` pour vérifier le type MIME des fichiers ;
+- `pygame-ce` pour la lecture audio ;
 - `tkinter` pour l'interface graphique ;
 - `xml.etree.ElementTree`, fourni avec Python, pour créer et lire les fichiers XML/XSPF.
 
@@ -98,11 +99,12 @@ python3 src/cli/main.py -h
 python3 src/cli/main.py -f ./music/song.mp3
 python3 src/cli/main.py -f ./music/song.mp3 --title "Nouveau titre" --artist "Nouvel artiste"
 python3 src/cli/main.py -f ./music/song.flac --album "Nouvel album" --track-number 3 --year 2026
+python3 src/cli/main.py -p ./music/song.mp3
 python3 src/cli/main.py -d ./music/
 python3 src/cli/main.py -d ./music/ -o playlist.xspf
 ```
 
-Les champs modifiables sont `--title`, `--artist`, `--album`, `--track-number` et `--year`. Les champs absents restent inchangés. Les options courtes demandées par le sujet sont `-f`, `-d`, `-o` et `-p`. Le traitement de `-p` reste à ajouter.
+Les champs modifiables sont `--title`, `--artist`, `--album`, `--track-number` et `--year`. Les champs absents restent inchangés. L'option `-p` lit le fichier jusqu'à sa fin ; `Ctrl+C` arrête proprement la lecture.
 
 ## Lancer les tests
 

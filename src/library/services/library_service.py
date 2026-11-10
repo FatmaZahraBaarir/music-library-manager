@@ -17,6 +17,7 @@ class LibraryService(LibraryInterface):
 		metadata_service=None,
 		metadata_input_service=None,
 		xspf_service=None,
+		audio_service=None,
 	):
 		"""
 		@brief Initialise la façade avec ses services techniques.
@@ -29,6 +30,8 @@ class LibraryService(LibraryInterface):
 		@type metadata_input_service MetadataInputService ou None
 		@param xspf_service Service de playlists, ou None pour le service réel.
 		@type xspf_service XspfService ou None
+		@param audio_service Service de lecture, ou None pour le service réel.
+		@type audio_service AudioService ou None
 		"""
 		if file_service is None:
 			from library.services.file.file_service import FileService
@@ -42,11 +45,15 @@ class LibraryService(LibraryInterface):
 		if xspf_service is None:
 			from library.services.playlist.xspf_service import XspfService
 			xspf_service = XspfService()
+		if audio_service is None:
+			from library.services.audio.audio_service import AudioService
+			audio_service = AudioService()
 
 		self.file_service = file_service
 		self.metadata_service = metadata_service
 		self.metadata_input_service = metadata_input_service
 		self.xspf_service = xspf_service
+		self.audio_service = audio_service
 
 	def find_audio_files(self, directory_path):
 		"""
@@ -207,3 +214,60 @@ class LibraryService(LibraryInterface):
 	def load_playlist(self, file_path):
 		"""Ouvre une playlist depuis un fichier XSPF."""
 		return self.xspf_service.load_playlist(file_path)
+
+	def play_track(self, file_path):
+		"""
+		@brief Valide un fichier puis démarre sa lecture audio.
+
+		@param file_path Chemin du fichier MP3 ou FLAC.
+		@type file_path str ou pathlib.Path
+		@return Morceau validé dont la lecture a démarré.
+		@rtype Track
+		"""
+		track = self.read_track(file_path)
+		self.audio_service.play_track(track)
+		return track
+
+	def play_playlist(self, playlist):
+		"""
+		@brief Valide puis démarre les morceaux d'une playlist dans l'ordre.
+
+		@param playlist Playlist à lire.
+		@type playlist Playlist
+		@return Playlist contenant les morceaux validés.
+		@rtype Playlist
+		"""
+		if not isinstance(playlist, Playlist):
+			raise ValueError("La lecture attend un objet Playlist.")
+
+		validated_tracks = [
+			self.read_track(track.file_path)
+			for track in playlist.tracks
+		]
+		validated_playlist = Playlist(
+			playlist.name,
+			file_path=playlist.file_path,
+			tracks=validated_tracks,
+		)
+		self.audio_service.play_playlist(validated_playlist)
+		return validated_playlist
+
+	def update_playlist_playback(self):
+		"""Met à jour la playlist depuis le thread principal de l'interface."""
+		return self.audio_service.update_playlist_playback()
+
+	def pause_playback(self):
+		"""Met la lecture audio en pause."""
+		return self.audio_service.pause_playback()
+
+	def resume_playback(self):
+		"""Reprend la lecture audio mise en pause."""
+		return self.audio_service.resume_playback()
+
+	def stop_playback(self):
+		"""Arrête la lecture audio en cours."""
+		return self.audio_service.stop_playback()
+
+	def is_playing(self):
+		"""Indique si une lecture audio est active."""
+		return self.audio_service.is_playing()
