@@ -32,9 +32,15 @@ class LibraryView:
 		# Méthode de la fenêtre principale utilisée pour afficher les informations.
 		self.on_file_selected = on_file_selected
 
+		# Ligne contenant les boutons sous la liste.
+		self.cadreBoutons = tk.Frame(cadreBibliotheque, bg="#ffffff")
+		self.cadreBoutons.pack(pady=5)
+
 		# Création du bouton d'affichage des métadonnées.
-		self.show_metadata_button = tk.Button(cadreBibliotheque, text="Afficher les métadonnées", command=self.show_selected_metadata)
-		self.show_metadata_button.pack(pady=5)
+		self.show_metadata_button = tk.Button(self.cadreBoutons, text="Afficher les métadonnées",
+		                                      command=self.show_selected_metadata)
+		self.show_metadata_button.pack(side=tk.LEFT, padx=5)
+
 
 	def show_selected_metadata(self):
 		"""
