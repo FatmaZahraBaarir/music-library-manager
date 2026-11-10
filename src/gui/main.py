@@ -1,17 +1,27 @@
 """
-@brief Point de lancement de l'interface graphique.
-
-Ce fichier crée la fenêtre principale et démarre l'application.
+@brief Lance l'interface graphique du gestionnaire musical.
 """
 
 import tkinter as tk
+
 from gui.main_window import MainWindow
+from library.services import LibraryService
 
-# Création de la fenêtre principale.
-root = tk.Tk()
+def main():
+	"""
+	@brief Crée la fenêtre, le service et démarre l'application.
+	"""
+	# Création de la fenêtre Tkinter.
+	fenetre = tk.Tk()
 
-# Création de l'interface graphique.
-window = MainWindow(root)
+	# Service commun pour accéder aux fonctionnalités du projet.
+	library_service = LibraryService()
 
-# Démarrage de la boucle graphique.
-root.mainloop()
+	# Construction de l'interface dans la fenêtre.
+	interface = MainWindow(fenetre, library_service)
+
+	# Gestion des actions de l'utilisateur.
+	fenetre.mainloop()
+
+if __name__ == "__main__":
+	main()
