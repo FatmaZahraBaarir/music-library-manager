@@ -43,6 +43,36 @@ class CliArgumentsTests(unittest.TestCase):
 		self.assertEqual(args.directory, "music")
 		self.assertEqual(args.output, "playlist.xspf")
 
+	def test_metadata_update_options(self):
+		"""@brief Vérifie les options de modification des métadonnées."""
+		args = parse_arguments([
+			"--file",
+			"music.mp3",
+			"--title",
+			"New title",
+			"--artist",
+			"New artist",
+			"--album",
+			"New album",
+			"--track-number",
+			"7",
+			"--year",
+			"2026",
+		])
+
+		self.assertEqual(args.title, "New title")
+		self.assertEqual(args.artist, "New artist")
+		self.assertEqual(args.album, "New album")
+		self.assertEqual(args.track_number, "7")
+		self.assertEqual(args.year, "2026")
+
+	def test_metadata_update_options_require_file(self):
+		"""@brief Refuse une modification sans fichier cible."""
+		with redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as error:
+			parse_arguments(["-d", "music", "--title", "New title"])
+
+		self.assertEqual(error.exception.code, 2)
+
 	def test_file_and_directory_are_mutually_exclusive(self):
 		"""@brief Vérifie que -f et -d ne peuvent pas être utilisés ensemble."""
 		with redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as error:
@@ -77,7 +107,18 @@ class CliArgumentsTests(unittest.TestCase):
 
 		help_message = stdout.getvalue()
 		self.assertEqual(result.exception.code, 0)
-		for option in ("-f", "-d", "-o", "-p", "-h"):
+		for option in (
+			"-f",
+			"-d",
+			"-o",
+			"-p",
+			"-h",
+			"--title",
+			"--artist",
+			"--album",
+			"--track-number",
+			"--year",
+		):
 			self.assertIn(option, help_message)
 
 

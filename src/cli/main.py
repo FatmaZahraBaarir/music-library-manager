@@ -52,6 +52,11 @@ def create_parser():
 		metavar="FICHIER",
 		help="lit un fichier audio",
 	)
+	parser.add_argument("--title", metavar="TITRE", help="modifie le titre avec -f")
+	parser.add_argument("--artist", metavar="ARTISTE", help="modifie l'artiste avec -f")
+	parser.add_argument("--album", metavar="ALBUM", help="modifie l'album avec -f")
+	parser.add_argument("--track-number",metavar="NUMÉRO",help="modifie le numéro de piste avec -f",)
+	parser.add_argument("--year", metavar="ANNÉE", help="modifie l'année avec -f")
 	return parser
 
 
@@ -73,6 +78,16 @@ def parse_arguments(arguments=None):
 
 	if args.output and not args.directory:
 		parser.error("-o/--output doit être utilisé avec -d/--directory")
+
+	metadata_values = (
+		args.title,
+		args.artist,
+		args.album,
+		args.track_number,
+		args.year,
+	)
+	if any(value is not None for value in metadata_values) and not args.file:
+		parser.error("les options de métadonnées doivent être utilisées avec -f/--file")
 
 	return args
 
@@ -113,8 +128,34 @@ def process_file(args, library_service):
 	@return Code de succès du traitement.
 	@rtype int
 	"""
-	# Utilise le service commun au CLI et à la GUI pour lire le fichier
-	metadata = library_service.read_metadata(args.file)
+	metadata_values = (
+		args.title,
+		args.artist,
+		args.album,
+		args.track_number,
+		args.year,
+	)
+
+	metadata_update_requested = False
+	# Examine les valeurs une par une jusqu'à en trouver une renseignée
+	for value in metadata_values:
+		if value is not None:
+			metadata_update_requested = True
+			break
+
+	if metadata_update_requested:
+		metadata = library_service.update_metadata_from_text(
+			file_path=args.file,
+			title_text=args.title,
+			artist_text=args.artist,
+			album_title_text=args.album,
+			track_number_text=args.track_number,
+			year_text=args.year,
+		)
+		print("Métadonnées modifiées et relues avec succès.")
+	else:
+		# Utilise le service commun au CLI et à la GUI pour lire le fichier
+		metadata = library_service.read_metadata(args.file)
 
 	# Remplace les informations absentes par un message lisible
 	title = metadata.title or "Non renseigné"

@@ -31,7 +31,7 @@ L'application permet de gérer une bibliothèque musicale composée de fichiers 
 - refus d'un XML qui ne contient pas une playlist XSPF valide ;
 - accès à la sauvegarde et à l'ouverture XSPF depuis `LibraryService` ;
 - génération automatique de `default_playlist.xspf` depuis un dossier exploré ;
-- affichage des métadonnées d'un fichier MP3 ou FLAC avec l'option CLI `-f` ;
+- affichage et modification des métadonnées d'un fichier MP3 ou FLAC avec l'option CLI `-f` ;
 - création d'une playlist vide, ajout et retrait de morceaux ;
 - première structure de l'interface graphique ;
 - tests automatiques.
@@ -91,16 +91,18 @@ La structure de la fenêtre existe, mais ses boutons ne sont pas encore tous rel
 
 ## Lancer le CLI
 
-Le CLI lit les métadonnées d'un fichier et crée une playlist depuis un dossier :
+Le CLI lit ou modifie les métadonnées d'un fichier et crée une playlist depuis un dossier :
 
 ```bash
 python3 src/cli/main.py -h
 python3 src/cli/main.py -f ./music/song.mp3
+python3 src/cli/main.py -f ./music/song.mp3 --title "Nouveau titre" --artist "Nouvel artiste"
+python3 src/cli/main.py -f ./music/song.flac --album "Nouvel album" --track-number 3 --year 2026
 python3 src/cli/main.py -d ./music/
 python3 src/cli/main.py -d ./music/ -o playlist.xspf
 ```
 
-Les options courtes demandées par le sujet sont `-f`, `-d`, `-o` et `-p`. Le traitement de `-p` reste à ajouter.
+Les champs modifiables sont `--title`, `--artist`, `--album`, `--track-number` et `--year`. Les champs absents restent inchangés. Les options courtes demandées par le sujet sont `-f`, `-d`, `-o` et `-p`. Le traitement de `-p` reste à ajouter.
 
 ## Lancer les tests
 
