@@ -1,26 +1,25 @@
 """
-@brief Composant de la barre de lecture audio.
+@brief Affiche la barre de lecture en bas de la fenêtre.
 """
 
 import tkinter as tk
 
-
 class PlayerBar:
 	"""
-	@brief Regroupe les boutons de lecture audio.
+	@brief Regroupe les boutons Lire et Arrêter.
 	"""
 
-	def __init__(self, parent):
+	def __init__(self, cadreLecteur):
 		"""
-		@brief Construit les boutons du lecteur.
+		@brief Crée les boutons du lecteur.
 
-		@param parent Cadre contenant la barre de lecture.
-		@type parent tkinter.Frame
+		@param cadreLecteur Cadre de la barre de lecture.
+		@type cadreLecteur tkinter.Frame
 		"""
-		# Création du bouton de lecture.
-		self.play_button = tk.Button(parent, text="Lire")
+		# Bouton de lecture, pas encore relié au service audio.
+		self.play_button = tk.Button(cadreLecteur, text="Lire")
 		self.play_button.pack(side=tk.LEFT, padx=10, pady=10)
 
-		# Création du bouton d'arrêt.
-		self.stop_button = tk.Button(parent, text="Arrêter")
+		# Bouton d'arrêt, pas encore relié au service audio.
+		self.stop_button = tk.Button(cadreLecteur, text="Arrêter")
 		self.stop_button.pack(side=tk.LEFT, padx=10, pady=10)

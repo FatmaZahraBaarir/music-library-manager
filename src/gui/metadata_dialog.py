@@ -1,5 +1,5 @@
 """
-@brief Composant du formulaire de modification des métadonnées.
+@brief Affiche le formulaire des métadonnées.
 """
 
 import tkinter as tk
@@ -9,122 +9,59 @@ class MetadataForm:
 	@brief Regroupe les champs de modification des métadonnées.
 	"""
 
-	def __init__(self, parent, on_save_metadata):
+	def __init__(self, cadreMetadonnees, on_save_metadata):
 		"""
-		@brief Construit le formulaire de modification.
+		@brief Crée les champs et le bouton Enregistrer.
 
-		@param parent Cadre contenant le formulaire.
-		@type parent tkinter.Frame
-		@param on_save_metadata Méthode appelée pour enregistrer les modifications.
-		@type on_save_metadata callable
+		@param cadreMetadonnees Cadre contenant le formulaire.
+		@type cadreMetadonnees tkinter.Frame
+		@param on_save_metadata Méthode qui enregistre les modifications.
 		"""
-		self.parent = parent
+		# Méthode appelée par le bouton Enregistrer.
 		self.on_save_metadata = on_save_metadata
 
-		# Création du titre du champ de modification.
-		self.edit_title_label = tk.Label(
-			self.parent,
-			text="Modifier le titre",
-			bg="#ffffff",
-			fg="#1e293b"
-		)
+		# Champ du titre.
+		self.edit_title_label = tk.Label(cadreMetadonnees, text="Modifier le titre", bg="#ffffff", fg="#1e293b")
 		self.edit_title_label.pack(pady=2)
 
-		# Variable de contrôle contenant le titre saisi.
 		self.title_var = tk.StringVar()
-
-		# Création du champ de saisie du titre sur fond gris clair.
-		self.title_entry = tk.Entry(
-			self.parent,
-			textvariable=self.title_var,
-			width=30,
-			bg="#f1f5f9",
-			fg="#1e293b"
-		)
+		self.title_entry = tk.Entry(cadreMetadonnees, textvariable=self.title_var, width=30, bg="#f1f5f9", fg="#1e293b")
 		self.title_entry.pack(pady=2)
 
-		# Création du champ de modification de l'artiste.
-		self.edit_artist_label = tk.Label(
-			self.parent,
-			text="Artiste",
-			bg="#ffffff",
-			fg="#1e293b"
-		)
+		# Champ de l'artiste.
+		self.edit_artist_label = tk.Label(cadreMetadonnees, text="Artiste", bg="#ffffff", fg="#1e293b")
 		self.edit_artist_label.pack(pady=2)
 
 		self.artist_var = tk.StringVar()
-		self.artist_entry = tk.Entry(
-			self.parent,
-			textvariable=self.artist_var,
-			width=30,
-			bg="#f1f5f9",
-			fg="#1e293b"
-		)
+		self.artist_entry = tk.Entry(cadreMetadonnees, textvariable=self.artist_var, width=30, bg="#f1f5f9", fg="#1e293b")
 		self.artist_entry.pack(pady=2)
 
-		# Création du champ de modification de l'album.
-		self.edit_album_label = tk.Label(
-			self.parent,
-			text="Album",
-			bg="#ffffff",
-			fg="#1e293b"
-		)
+		# Champ de l'album.
+		self.edit_album_label = tk.Label(cadreMetadonnees, text="Album", bg="#ffffff", fg="#1e293b")
 		self.edit_album_label.pack(pady=2)
 
 		self.album_var = tk.StringVar()
-		self.album_entry = tk.Entry(
-			self.parent,
-			textvariable=self.album_var,
-			width=30,
-			bg="#f1f5f9",
-			fg="#1e293b"
-		)
+		self.album_entry = tk.Entry(cadreMetadonnees, textvariable=self.album_var, width=30, bg="#f1f5f9", fg="#1e293b")
 		self.album_entry.pack(pady=2)
 
-		# Création du champ de modification du numéro de piste.
-		self.edit_track_number_label = tk.Label(
-			self.parent,
-			text="Numéro de piste",
-			bg="#ffffff",
-			fg="#1e293b"
-		)
+		# Champ du numéro de piste dans l'album.
+		self.edit_track_number_label = tk.Label(cadreMetadonnees, text="Numéro de piste", bg="#ffffff", fg="#1e293b")
 		self.edit_track_number_label.pack(pady=2)
 
 		self.track_number_var = tk.StringVar()
-		self.track_number_entry = tk.Entry(
-			self.parent,
-			textvariable=self.track_number_var,
-			width=30,
-			bg="#f1f5f9",
-			fg="#1e293b"
-		)
+		self.track_number_entry = tk.Entry(cadreMetadonnees, textvariable=self.track_number_var, width=30, bg="#f1f5f9", fg="#1e293b")
 		self.track_number_entry.pack(pady=2)
 
-		# Création du champ de modification de l'année.
-		self.edit_year_label = tk.Label(
-			self.parent,
-			text="Année",
-			bg="#ffffff",
-			fg="#1e293b"
-		)
+		# Champ de l'année.
+		self.edit_year_label = tk.Label(cadreMetadonnees, text="Année", bg="#ffffff", fg="#1e293b")
 		self.edit_year_label.pack(pady=2)
 
 		self.year_var = tk.StringVar()
-		self.year_entry = tk.Entry(
-			self.parent,
-			textvariable=self.year_var,
-			width=30,
-			bg="#f1f5f9",
-			fg="#1e293b"
-		)
+		self.year_entry = tk.Entry(cadreMetadonnees, textvariable=self.year_var, width=30, bg="#f1f5f9", fg="#1e293b")
 		self.year_entry.pack(pady=2)
 
-		# Création du bouton de sauvegarde des métadonnées.
-		self.save_metadata_button = tk.Button(
-			self.parent,
-			text="Enregistrer les modifications",
-			command=self.on_save_metadata
-		)
+		# Bouton de sauvegarde.
+		self.save_metadata_button = tk.Button(cadreMetadonnees, text="Enregistrer les modifications", command=self.on_save_metadata)
 		self.save_metadata_button.pack(pady=5)
 
 	def clear_fields(self):
@@ -139,9 +76,9 @@ class MetadataForm:
 
 	def display_metadata(self, metadata):
 		"""
-		@brief Remplit les champs avec les métadonnées du morceau.
+		@brief Affiche les valeurs du morceau dans les champs.
 
-		@param metadata Métadonnées à afficher dans le formulaire.
+		@param metadata Métadonnées du morceau.
 		@type metadata Metadata
 		"""
 		# Effacement des valeurs du morceau précédent.

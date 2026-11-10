@@ -1,59 +1,44 @@
 """
-@brief Affichage de la bibliothèque musicale pour la version 1.
+@brief Affiche la bibliothèque musicale.
 """
 
 import tkinter as tk
 
-
 class LibraryView:
 	"""
-	@brief Affiche les noms des fichiers audio disponibles.
+	@brief Affiche les fichiers audio et permet de choisir un morceau.
 	"""
 
-	def __init__(self, parent, on_file_selected):
+	def __init__(self, cadreBibliotheque, on_file_selected):
 		"""
-		@brief Construit la liste des morceaux.
+		@brief Crée la liste des fichiers et le bouton d'affichage.
 
-		@param parent Cadre contenant la bibliothèque.
-		@type parent tkinter.Frame
-		@param on_file_selected Méthode appelée à la sélection d'un morceau.
-		@type on_file_selected callable
+		@param cadreBibliotheque Cadre contenant les fichiers audio.
+		@type cadreBibliotheque tkinter.Frame
+		@param on_file_selected Méthode qui affiche les métadonnées.
 		"""
 		# Création du titre de la bibliothèque.
-		self.files_label = tk.Label(
-			parent,
-			text="Musiques",
-			font=("Arial", 14),
-			bg="#ffffff",
-			fg="#1e293b"
-		)
+		self.files_label = tk.Label(cadreBibliotheque, text="Musiques", font=("Arial", 14), bg="#ffffff", fg="#1e293b")
 		self.files_label.pack(padx=15, pady=10)
 
-		# Affichage des instructions d'utilisation.
-		self.instructions_label = tk.Label(
-			parent,
-			text="Ouvrez un dossier ou un fichier,\npuis sélectionnez un morceau.",
-			bg="#ffffff",
-			fg="#475569"
-		)
+		# Affichage des instructions.
+		self.instructions_label = tk.Label(cadreBibliotheque, text="Ouvrez un dossier ou un fichier.\nSélectionnez un morceau, puis cliquez sur « Afficher les métadonnées ».", bg="#ffffff", fg="#475569")
 		self.instructions_label.pack(padx=15, pady=10)
 
-		# Création de la liste des morceaux.
-		self.files_list = tk.Listbox(
-			parent,
-			width=35,
-			height=12,
-			bg="#f1f5f9",
-			fg="#1e293b",
-			selectbackground="#1d4ed8",
-			selectforeground="white"
-		)
-		self.files_list.pack(
-			fill=tk.BOTH,
-			expand=True,
-			padx=15,
-			pady=10
-		)
+		# Création de la liste des fichiers audio.
+		self.files_list = tk.Listbox(cadreBibliotheque, width=65, height=20, bg="#f1f5f9", fg="#1e293b", selectbackground="#1d4ed8", selectforeground="white")
+		self.files_list.pack( padx=15, pady=10)
 
-		# Affichage des informations lors de la sélection d'un morceau.
-		self.files_list.bind("<<ListboxSelect>>", on_file_selected)
+		# Méthode de la fenêtre principale utilisée pour afficher les informations.
+		self.on_file_selected = on_file_selected
+
+		# Création du bouton d'affichage des métadonnées.
+		self.show_metadata_button = tk.Button(cadreBibliotheque, text="Afficher les métadonnées", command=self.show_selected_metadata)
+		self.show_metadata_button.pack(pady=5)
+
+	def show_selected_metadata(self):
+		"""
+		@brief Demande l'affichage des métadonnées du morceau sélectionné.
+		"""
+		# Aucun événement souris n'est transmis par le bouton.
+		self.on_file_selected()
