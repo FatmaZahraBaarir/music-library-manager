@@ -1,5 +1,6 @@
 import argparse
 import sys
+import time
 from pathlib import Path
 
 
@@ -52,6 +53,11 @@ def create_parser():
 		metavar="FICHIER",
 		help="lit un fichier audio",
 	)
+	parser.add_argument("--title", metavar="TITRE", help="modifie le titre avec -f")
+	parser.add_argument("--artist", metavar="ARTISTE", help="modifie l'artiste avec -f")
+	parser.add_argument("--album", metavar="ALBUM", help="modifie l'album avec -f")
+	parser.add_argument("--track-number",metavar="NUMÉRO",help="modifie le numéro de piste avec -f",)
+	parser.add_argument("--year", metavar="ANNÉE", help="modifie l'année avec -f")
 	return parser
 
 
@@ -73,6 +79,16 @@ def parse_arguments(arguments=None):
 
 	if args.output and not args.directory:
 		parser.error("-o/--output doit être utilisé avec -d/--directory")
+
+	metadata_values = (
+		args.title,
+		args.artist,
+		args.album,
+		args.track_number,
+		args.year,
+	)
+	if any(value is not None for value in metadata_values) and not args.file:
+		parser.error("les options de métadonnées doivent être utilisées avec -f/--file")
 
 	return args
 
@@ -113,8 +129,34 @@ def process_file(args, library_service):
 	@return Code de succès du traitement.
 	@rtype int
 	"""
-	# Utilise le service commun au CLI et à la GUI pour lire le fichier
-	metadata = library_service.read_metadata(args.file)
+	metadata_values = (
+		args.title,
+		args.artist,
+		args.album,
+		args.track_number,
+		args.year,
+	)
+
+	metadata_update_requested = False
+	# Examine les valeurs une par une jusqu'à en trouver une renseignée
+	for value in metadata_values:
+		if value is not None:
+			metadata_update_requested = True
+			break
+
+	if metadata_update_requested:
+		metadata = library_service.update_metadata_from_text(
+			file_path=args.file,
+			title_text=args.title,
+			artist_text=args.artist,
+			album_title_text=args.album,
+			track_number_text=args.track_number,
+			year_text=args.year,
+		)
+		print("Métadonnées modifiées et relues avec succès.")
+	else:
+		# Utilise le service commun au CLI et à la GUI pour lire le fichier
+		metadata = library_service.read_metadata(args.file)
 
 	# Remplace les informations absentes par un message lisible
 	title = metadata.title or "Non renseigné"
@@ -133,6 +175,29 @@ def process_file(args, library_service):
 	return 0
 
 
+def process_play(args, library_service):
+	"""Démarre un fichier audio et garde le CLI actif jusqu'à sa fin."""
+	file_path = args.play
+
+	try:
+		library_service.play_track(file_path)
+		print(f"Lecture en cours : {file_path}")
+
+		# Vérifie si le morceau est encore en cours
+		playback_in_progress = library_service.is_playing()
+		while playback_in_progress:
+			time.sleep(0.1)
+			playback_in_progress = library_service.is_playing()
+
+	except KeyboardInterrupt:
+		library_service.stop_playback()
+		print("Lecture arrêtée.")
+		return 0
+
+	print("Lecture terminée.")
+	return 0
+
+
 def main(arguments=None, library_service=None):
 	"""
 	@brief Lance le programme en ligne de commande.
@@ -146,14 +211,19 @@ def main(arguments=None, library_service=None):
 	"""
 	args = parse_arguments(arguments)
 
-	if args.file or args.directory:
+	if args.file or args.directory or args.play:
 		try:
 			if library_service is None:
 				from library.services.library_service import LibraryService
 				library_service = LibraryService()
 			if args.directory:
 				return process_directory(args, library_service)
-			return process_file(args, library_service)
+
+			if args.file:
+				return process_file(args, library_service)
+
+			if args.play:
+				return process_play(args, library_service)
 		except ImportError as error:
 			print(f"Erreur : dépendance Python absente ({error}).", file=sys.stderr)
 			return 1
@@ -161,8 +231,7 @@ def main(arguments=None, library_service=None):
 			print(f"Erreur : {error}", file=sys.stderr)
 			return 1
 
-	print("Erreur : l'option -p n'est pas encore implémentée.", file=sys.stderr)
-	return 1
+	return 0
 
 
 if __name__ == "__main__":
