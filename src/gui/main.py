@@ -5,7 +5,7 @@
 import tkinter as tk
 
 from gui.main_window import MainWindow
-from library.services import LibraryService
+from library.services.library_service import LibraryService
 
 def main():
 	"""
