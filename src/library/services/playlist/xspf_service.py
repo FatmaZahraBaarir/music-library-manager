@@ -39,8 +39,9 @@ class XspfService:
 			location = ET.SubElement(track_element, XSPF_TAG + "location")
 			location.text = Path(track.file_path).resolve().as_uri()
 
-		# Écrit la playlist dans le fichier choisi
+		# Indente le XML avec des tabulations pour le rendre lisible
 		tree = ET.ElementTree(root)
+		ET.indent(tree, space="	", level=0)
 		tree.write(output_path, encoding="utf-8", xml_declaration=True)
 		playlist.file_path = output_path
 
