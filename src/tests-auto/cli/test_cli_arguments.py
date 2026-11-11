@@ -80,6 +80,13 @@ class CliArgumentsTests(unittest.TestCase):
 
 		self.assertEqual(error.exception.code, 2)
 
+	def test_file_and_play_are_mutually_exclusive(self):
+		"""@brief Vérifie que -f et -p ne peuvent pas être utilisés ensemble."""
+		with redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as error:
+			parse_arguments(["-f", "music.mp3", "-p", "other.mp3"])
+
+		self.assertEqual(error.exception.code, 2)
+
 	def test_missing_argument_displays_functional_error(self):
 		"""@brief Vérifie le message demandé lorsqu'aucun argument n'est fourni."""
 		stderr = io.StringIO()

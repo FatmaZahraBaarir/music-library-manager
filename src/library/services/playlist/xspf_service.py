@@ -80,10 +80,11 @@ class XspfService:
 			if location.text is None:
 				raise ValueError("Chemin du morceau manquant.")
 			track_path = Path(unquote(urlparse(location.text).path))
+			extension = track_path.suffix.lower()
 
-			if track_path.suffix.lower() == ".mp3":
+			if extension == ".mp3":
 				audio_format = AudioFormat.MP3
-			elif track_path.suffix.lower() == ".flac":
+			elif extension == ".flac":
 				audio_format = AudioFormat.FLAC
 			else:
 				raise ValueError("Format audio non pris en charge.")
