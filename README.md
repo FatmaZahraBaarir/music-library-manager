@@ -92,7 +92,9 @@ Depuis la racine du projet :
 PYTHONPATH=src python3 src/gui/main.py
 ```
 
-La structure de la fenêtre existe, mais ses boutons ne sont pas encore tous reliés aux services.
+Au lancement, la page d’accueil affiche le message de bienvenue, le menu « Ouvrir » et la liste des musiques en dessous. Le menu permet de choisir un dossier, plusieurs morceaux ou une playlist. La liste est vide au démarrage et conserve les morceaux ouverts lors des retours à l’accueil. Le bouton « Afficher les métadonnées » ouvre le panneau d’informations du morceau sélectionné.
+
+Les boutons audio ne sont pas encore reliés à la GUI.
 
 ## Lancer le CLI
 

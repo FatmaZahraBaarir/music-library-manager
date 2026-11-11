@@ -17,9 +17,9 @@ class PlayerBar:
 		@type cadreLecteur tkinter.Frame
 		"""
 		# Bouton de lecture, pas encore relié au service audio.
-		self.play_button = tk.Button(cadreLecteur, text="Lire")
+		self.play_button = tk.Button(cadreLecteur, text="Lire - À venir")
 		self.play_button.pack(side=tk.LEFT, padx=10, pady=10)
 
 		# Bouton d'arrêt, pas encore relié au service audio.
-		self.stop_button = tk.Button(cadreLecteur, text="Arrêter")
+		self.stop_button = tk.Button(cadreLecteur, text="Arrêter - À venir")
 		self.stop_button.pack(side=tk.LEFT, padx=10, pady=10)
