@@ -3,6 +3,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 # Rend le package library accessible, même sans définir PYTHONPATH.
 SRC_DIRECTORY = Path(__file__).resolve().parents[2]
@@ -146,7 +147,14 @@ class MetadataServiceIntegrationTests(unittest.TestCase):
 		"""
 		@brief Construit un Track MP3 avec une durée positive.
 		"""
-		track = self.metadata_service.read_track(MP3_FILE)
+		with patch.object(
+			self.metadata_service,
+			"read_metadata",
+			wraps=self.metadata_service.read_metadata,
+		) as read_metadata:
+			track = self.metadata_service.read_track(MP3_FILE)
+
+		read_metadata.assert_called_once_with(MP3_FILE, AudioFormat.MP3)
 		self.assertIsInstance(track, Track)
 		self.assertEqual(track.file_path, MP3_FILE)
 		self.assertEqual(track.format, AudioFormat.MP3)

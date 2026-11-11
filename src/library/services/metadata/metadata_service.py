@@ -52,17 +52,20 @@ class MetadataService:
 			"Le fichier n'est pas un MP3 ou un FLAC valide."
 		)
 
-	def read_metadata(self, file_path):
+	def read_metadata(self, file_path, audio_format=None):
 		"""
 		@brief Valide un fichier puis extrait ses métadonnées.
 
 		@param file_path Chemin du fichier MP3 ou FLAC.
 		@type file_path str ou pathlib.Path
+		@param audio_format Format déjà détecté, ou None pour le détecter.
+		@type audio_format AudioFormat ou None
 		@return Métadonnées extraites du fichier.
 		@rtype Metadata
 		@raise ValueError Si le fichier n'est ni un MP3 ni un FLAC valide.
 		"""
-		audio_format = self._detect_format(file_path)
+		if audio_format is None:
+			audio_format = self._detect_format(file_path)
 
 		if audio_format == AudioFormat.MP3:
 			return self.metadata_reader.read_mp3(file_path)
@@ -103,12 +106,11 @@ class MetadataService:
 		@raise ValueError Si le fichier n'est pas un MP3 ou un FLAC valide.
 		"""
 		audio_format = self._detect_format(file_path)
+		metadata = self.read_metadata(file_path, audio_format)
 
 		if audio_format == AudioFormat.MP3:
-			metadata = self.metadata_reader.read_mp3(file_path)
 			duration_seconds = self.metadata_reader.read_mp3_duration(file_path)
 		else:
-			metadata = self.metadata_reader.read_flac(file_path)
 			duration_seconds = self.metadata_reader.read_flac_duration(file_path)
 
 		return Track(
