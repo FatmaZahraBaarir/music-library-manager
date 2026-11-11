@@ -140,9 +140,11 @@ python3 -m unittest discover -s src/tests-auto/cli -p "test_*.py" -v
 ### Tous les tests
 
 ```bash
-python3 -m unittest discover -s src/tests-auto -p "test_*.py" -v
-python3 -m unittest discover -s src/tests-auto/cli -p "test_*.py" -v
+PYTHONDONTWRITEBYTECODE=1 PYGAME_HIDE_SUPPORT_PROMPT=1 SDL_AUDIODRIVER=dummy \
+python3 -B -m unittest discover -s src/tests-auto -p "test_*.py" -v
 ```
+
+La commande unique découvre les tests classés dans `audio`, `cli_tests`, `file`, `library_tests`, `metadata` et `playlist`.
 
 Deux fichiers audio de test sont disponibles dans `src/tests-auto/fixtures/audio/` : `sample.mp3` et `sample.flac`. Ils servent à tester les formats MP3 et FLAC ainsi que la lecture et la modification des métadonnées.
 

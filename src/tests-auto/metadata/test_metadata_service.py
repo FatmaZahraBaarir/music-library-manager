@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 
 # Rend le package library accessible, même sans définir PYTHONPATH.
-SRC_DIRECTORY = Path(__file__).resolve().parents[1]
+SRC_DIRECTORY = Path(__file__).resolve().parents[2]
 if str(SRC_DIRECTORY) not in sys.path:
 	sys.path.insert(0, str(SRC_DIRECTORY))
 
@@ -15,7 +15,7 @@ from library.services.file.filter.file_filtrer import FileFiltrer
 from library.services.metadata.metadata_service import MetadataService
 
 
-AUDIO_DIRECTORY = Path(__file__).parent / "fixtures" / "audio"
+AUDIO_DIRECTORY = Path(__file__).resolve().parents[1] / "fixtures" / "audio"
 MP3_FILE = AUDIO_DIRECTORY / "sample.mp3"
 FLAC_FILE = AUDIO_DIRECTORY / "sample.flac"
 
