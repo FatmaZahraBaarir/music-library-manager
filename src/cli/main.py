@@ -47,7 +47,7 @@ def create_parser():
 		metavar="FICHIER.xspf",
 		help="choisit le fichier XSPF produit avec -d",
 	)
-	parser.add_argument(
+	input_group.add_argument(
 		"-p",
 		"--play",
 		metavar="FICHIER",
@@ -61,10 +61,26 @@ def create_parser():
 	return parser
 
 
+def has_metadata_update(args):
+	"""Indique si l'utilisateur demande une modification de métadonnées."""
+	metadata_values = (
+		args.title,
+		args.artist,
+		args.album,
+		args.track_number,
+		args.year,
+	)
+
+	for value in metadata_values:
+		if value is not None:
+			return True
+
+	return False
+
+
 def parse_arguments(arguments=None):
 	"""
 	@brief Lit les arguments et refuse les combinaisons incorrectes.
-
 	@param arguments Arguments à analyser, ou None pour utiliser ceux du terminal.
 	@type arguments list de str ou None
 	@return Arguments reconnus par le parseur.
@@ -80,14 +96,7 @@ def parse_arguments(arguments=None):
 	if args.output and not args.directory:
 		parser.error("-o/--output doit être utilisé avec -d/--directory")
 
-	metadata_values = (
-		args.title,
-		args.artist,
-		args.album,
-		args.track_number,
-		args.year,
-	)
-	if any(value is not None for value in metadata_values) and not args.file:
+	if has_metadata_update(args) and not args.file:
 		parser.error("les options de métadonnées doivent être utilisées avec -f/--file")
 
 	return args
@@ -129,22 +138,7 @@ def process_file(args, library_service):
 	@return Code de succès du traitement.
 	@rtype int
 	"""
-	metadata_values = (
-		args.title,
-		args.artist,
-		args.album,
-		args.track_number,
-		args.year,
-	)
-
-	metadata_update_requested = False
-	# Examine les valeurs une par une jusqu'à en trouver une renseignée
-	for value in metadata_values:
-		if value is not None:
-			metadata_update_requested = True
-			break
-
-	if metadata_update_requested:
+	if has_metadata_update(args):
 		metadata = library_service.update_metadata_from_text(
 			file_path=args.file,
 			title_text=args.title,
@@ -184,10 +178,8 @@ def process_play(args, library_service):
 		print(f"Lecture en cours : {file_path}")
 
 		# Vérifie si le morceau est encore en cours
-		playback_in_progress = library_service.is_playing()
-		while playback_in_progress:
+		while library_service.is_playing():
 			time.sleep(0.1)
-			playback_in_progress = library_service.is_playing()
 
 	except KeyboardInterrupt:
 		library_service.stop_playback()
@@ -211,27 +203,24 @@ def main(arguments=None, library_service=None):
 	"""
 	args = parse_arguments(arguments)
 
-	if args.file or args.directory or args.play:
-		try:
-			if library_service is None:
-				from library.services.library_service import LibraryService
-				library_service = LibraryService()
-			if args.directory:
-				return process_directory(args, library_service)
+	try:
+		if library_service is None:
+			from library.services.library_service import LibraryService
+			library_service = LibraryService()
+		if args.directory:
+			return process_directory(args, library_service)
 
-			if args.file:
-				return process_file(args, library_service)
+		if args.file:
+			return process_file(args, library_service)
 
-			if args.play:
-				return process_play(args, library_service)
-		except ImportError as error:
-			print(f"Erreur : dépendance Python absente ({error}).", file=sys.stderr)
-			return 1
-		except (OSError, ValueError) as error:
-			print(f"Erreur : {error}", file=sys.stderr)
-			return 1
-
-	return 0
+		if args.play:
+			return process_play(args, library_service)
+	except ImportError as error:
+		print(f"Erreur : dépendance Python absente ({error}).", file=sys.stderr)
+		return 1
+	except (OSError, ValueError) as error:
+		print(f"Erreur : {error}", file=sys.stderr)
+		return 1
 
 
 if __name__ == "__main__":

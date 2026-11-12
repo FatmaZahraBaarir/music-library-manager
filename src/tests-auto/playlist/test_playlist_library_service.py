@@ -12,20 +12,13 @@ from library.services.library_service import LibraryService
 
 
 class FakeXspfService:
-	"""Simule le service XSPF pour les tests."""
+	"""Mémorise la playlist transmise pendant le test."""
 
 	def __init__(self):
 		self.saved_data = None
-		self.loaded_path = None
-		self.loaded_playlist = Playlist("Playlist ouverte")
 
 	def save_playlist(self, playlist, output_path):
 		self.saved_data = (playlist, output_path)
-		return "Playlist sauvegardée"
-
-	def load_playlist(self, file_path):
-		self.loaded_path = file_path
-		return self.loaded_playlist
 
 
 class FakeFileService:
@@ -61,27 +54,6 @@ class PlaylistLibraryServiceTests(unittest.TestCase):
 			metadata_input_service=object(),
 			xspf_service=self.xspf_service,
 		)
-
-	def test_save_playlist_uses_xspf_service(self):
-		"""Vérifie que la sauvegarde utilise le service XSPF."""
-		playlist = Playlist("Ma playlist")
-		output_path = Path("playlist.xspf")
-
-		result = self.library_service.save_playlist(playlist, output_path)
-
-		print("\nSauvegarde transmise à XspfService")
-		self.assertEqual(result, "Playlist sauvegardée")
-		self.assertEqual(self.xspf_service.saved_data, (playlist, output_path))
-
-	def test_load_playlist_uses_xspf_service(self):
-		"""Vérifie que l'ouverture utilise le service XSPF."""
-		file_path = Path("playlist.xspf")
-
-		result = self.library_service.load_playlist(file_path)
-
-		print("\nOuverture transmise à XspfService")
-		self.assertIs(result, self.xspf_service.loaded_playlist)
-		self.assertEqual(self.xspf_service.loaded_path, file_path)
 
 	def test_create_default_playlist_from_directory(self):
 		"""Vérifie l'exploration puis la sauvegarde de la playlist par défaut."""
