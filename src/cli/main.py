@@ -127,6 +127,39 @@ def process_directory(args, library_service):
 	return 0
 
 
+def format_duration(duration_seconds):
+	"""Formate une durée en MM:SS ou HH:MM:SS."""
+	if duration_seconds is None:
+		return "Non renseignée"
+
+	total_seconds = int(duration_seconds)
+	hours, remaining_seconds = divmod(total_seconds, 3600)
+	minutes, seconds = divmod(remaining_seconds, 60)
+
+	if hours > 0:
+		return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+
+	return f"{minutes:02d}:{seconds:02d}"
+
+
+def display_metadata(heading, metadata):
+	"""Affiche un bloc de métadonnées avec les valeurs absentes explicitées."""
+	if heading:
+		print(f"{heading} :")
+
+	title = metadata.title or "Non renseigné"
+	artist = metadata.artist or "Non renseigné"
+	album_title = metadata.album_title or "Non renseigné"
+	track_number = metadata.track_number or "Non renseigné"
+	year = metadata.year or "Non renseigné"
+
+	print(f"Titre : {title}")
+	print(f"Artiste : {artist}")
+	print(f"Album : {album_title}")
+	print(f"Piste : {track_number}")
+	print(f"Année : {year}")
+
+
 def process_file(args, library_service):
 	"""
 	@brief Lit et affiche les métadonnées du fichier audio demandé.
@@ -138,7 +171,12 @@ def process_file(args, library_service):
 	@return Code de succès du traitement.
 	@rtype int
 	"""
+	track = library_service.read_track(args.file)
+	duration = format_duration(track.duration_seconds)
+	print(f"Fichier : {args.file}")
+
 	if has_metadata_update(args):
+		display_metadata("Avant modification", track.metadata)
 		metadata = library_service.update_metadata_from_text(
 			file_path=args.file,
 			title_text=args.title,
@@ -148,23 +186,11 @@ def process_file(args, library_service):
 			year_text=args.year,
 		)
 		print("Métadonnées modifiées et relues avec succès.")
+		display_metadata("Après modification", metadata)
 	else:
-		# Utilise le service commun au CLI et à la GUI pour lire le fichier
-		metadata = library_service.read_metadata(args.file)
+		display_metadata(None, track.metadata)
 
-	# Remplace les informations absentes par un message lisible
-	title = metadata.title or "Non renseigné"
-	artist = metadata.artist or "Non renseigné"
-	album_title = metadata.album_title or "Non renseigné"
-	track_number = metadata.track_number or "Non renseigné"
-	year = metadata.year or "Non renseigné"
-
-	print(f"Fichier : {args.file}")
-	print(f"Titre : {title}")
-	print(f"Artiste : {artist}")
-	print(f"Album : {album_title}")
-	print(f"Piste : {track_number}")
-	print(f"Année : {year}")
+	print(f"Durée : {duration}")
 
 	return 0
 
