@@ -1,4 +1,5 @@
 import argparse
+import select
 import sys
 import time
 from pathlib import Path
@@ -160,6 +161,18 @@ def display_metadata(heading, metadata):
 	print(f"Année : {year}")
 
 
+def confirm_metadata_update():
+	"""Demande une confirmation explicite avant l'écriture des métadonnées."""
+	try:
+		answer = input(
+			"Confirmer l'écriture des métadonnées (Entrée = non) ? (o/n) "
+		)
+	except EOFError:
+		return False
+
+	return answer.strip().lower() in ("o", "oui")
+
+
 def process_file(args, library_service):
 	"""
 	@brief Lit et affiche les métadonnées du fichier audio demandé.
@@ -177,16 +190,19 @@ def process_file(args, library_service):
 
 	if has_metadata_update(args):
 		display_metadata("Avant modification", track.metadata)
-		metadata = library_service.update_metadata_from_text(
-			file_path=args.file,
-			title_text=args.title,
-			artist_text=args.artist,
-			album_title_text=args.album,
-			track_number_text=args.track_number,
-			year_text=args.year,
-		)
-		print("Métadonnées modifiées et relues avec succès.")
-		display_metadata("Après modification", metadata)
+		if not confirm_metadata_update():
+			print("Modification annulée. Aucun changement effectué.")
+		else:
+			metadata = library_service.update_metadata_from_text(
+				file_path=args.file,
+				title_text=args.title,
+				artist_text=args.artist,
+				album_title_text=args.album,
+				track_number_text=args.track_number,
+				year_text=args.year,
+			)
+			print("Métadonnées modifiées et relues avec succès.")
+			display_metadata("Après modification", metadata)
 	else:
 		display_metadata(None, track.metadata)
 
@@ -195,16 +211,41 @@ def process_file(args, library_service):
 	return 0
 
 
+def read_command():
+	"""Retourne une commande validée par Entrée sans bloquer, sinon None."""
+	if not sys.stdin.isatty():
+		return None
+
+	ready_streams, _, _ = select.select([sys.stdin], [], [], 0)
+	return sys.stdin.readline().strip().lower() if ready_streams else None
+
+
 def process_play(args, library_service):
 	"""Démarre un fichier audio et garde le CLI actif jusqu'à sa fin."""
 	file_path = args.play
+	is_paused = False
 
 	try:
 		library_service.play_track(file_path)
 		print(f"Lecture en cours : {file_path}")
+		print("Tapez q puis Entrée pour arrêter, k puis Entrée pour pause/reprise.")
 
 		# Vérifie si le morceau est encore en cours
-		while library_service.is_playing():
+		while is_paused or library_service.is_playing():
+			command = read_command()
+			if command == "q":
+				library_service.stop_playback()
+				print("Lecture arrêtée.")
+				return 0
+			if command == "k":
+				if is_paused:
+					library_service.resume_playback()
+					is_paused = False
+					print("Lecture reprise.")
+				else:
+					library_service.pause_playback()
+					is_paused = True
+					print("Lecture en pause.")
 			time.sleep(0.1)
 
 	except KeyboardInterrupt:

@@ -4,13 +4,14 @@ import unittest
 from contextlib import redirect_stdout
 from pathlib import Path
 from types import SimpleNamespace
+from unittest.mock import patch
 
 
 SRC_DIRECTORY = Path(__file__).resolve().parents[2]
 if str(SRC_DIRECTORY) not in sys.path:
 	sys.path.insert(0, str(SRC_DIRECTORY))
 
-from cli.main import format_duration, main
+from cli.main import confirm_metadata_update, format_duration, main
 from library.models.metadata import Metadata
 
 
@@ -56,6 +57,20 @@ class FakeLibraryService:
 class CliFileTests(unittest.TestCase):
 	"""@brief Teste l'affichage des métadonnées avec l'option -f."""
 
+	def test_confirmation_accepts_yes_answers(self):
+		"""@brief Accepte oui sans dépendre de la casse ou des espaces."""
+		for answer in ("o", "O", "oui", " OUI "):
+			with self.subTest(answer=answer), \
+					patch("builtins.input", return_value=answer):
+				self.assertTrue(confirm_metadata_update())
+
+	def test_confirmation_rejects_empty_or_negative_answers(self):
+		"""@brief Annule lorsque la réponse ne confirme pas explicitement."""
+		for answer in ("", " ", "n", "non", "autre"):
+			with self.subTest(answer=answer), \
+					patch("builtins.input", return_value=answer):
+				self.assertFalse(confirm_metadata_update())
+
 	def test_duration_under_one_hour_uses_minutes_and_seconds(self):
 		"""@brief Formate une durée courte avec deux blocs."""
 		self.assertEqual(format_duration(65), "01:05")
@@ -91,7 +106,7 @@ class CliFileTests(unittest.TestCase):
 		service = FakeLibraryService()
 		stdout = io.StringIO()
 
-		with redirect_stdout(stdout):
+		with patch("builtins.input", return_value="o"), redirect_stdout(stdout):
 			result = main([
 				"-f",
 				"music.mp3",
@@ -126,6 +141,29 @@ class CliFileTests(unittest.TestCase):
 			output.index("Avant modification"),
 			output.index("Après modification"),
 		)
+
+	def test_file_update_can_be_cancelled_before_writing(self):
+		"""@brief Refuse toute écriture lorsque l'utilisateur répond non."""
+		service = FakeLibraryService()
+		stdout = io.StringIO()
+
+		with patch("builtins.input", return_value="n") as mocked_input, \
+				redirect_stdout(stdout):
+			result = main([
+				"-f",
+				"music.mp3",
+				"--title",
+				"New title",
+			], library_service=service)
+
+		output = stdout.getvalue()
+		self.assertEqual(result, 0)
+		mocked_input.assert_called_once_with(
+			"Confirmer l'écriture des métadonnées (Entrée = non) ? (o/n) "
+		)
+		self.assertEqual(service.update_calls, 0)
+		self.assertIn("Modification annulée", output)
+		self.assertNotIn("Après modification", output)
 
 
 if __name__ == "__main__":
