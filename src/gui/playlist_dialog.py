@@ -19,7 +19,7 @@ class PlaylistDialog:
 		@type cadrePlaylist tkinter.Frame
 		@param library_service Service de la bibliothèque.
 		@type library_service LibraryService
-		@param on_playlist_created Méthode appelée pour valider la playlist.
+		@param on_playlist_created Méthode appelée après validation du nom pour transmettre la playlist créée.
 		@param on_cancel Méthode appelée pour annuler.
 		"""
 		self.library_service = library_service
@@ -40,38 +40,115 @@ class PlaylistDialog:
 		self.nom_entry = tk.Entry(cadrePlaylist, textvariable=self.nom_var, width=35, bg="#f1f5f9", fg="#1e293b")
 		self.nom_entry.pack(pady=5)
 
-		# Choix des fichiers audio, un par un.
-		self.choisir_button = tk.Button(cadrePlaylist, text="Choisir un morceau", command=self.choose_track)
-		self.choisir_button.pack(pady=10)
+		# Cadre contenant le menu d’ajout des morceaux.
+		self.cadreChoix = tk.Frame(cadrePlaylist, bg="#ffffff")
+		self.cadreChoix.pack(pady=10)
+
+		# Menu d'ajout : morceaux sélectionnés ou dossier entier.
+		self.ajouter_button = tk.Menubutton(self.cadreChoix, text="Ajouter", relief=tk.RAISED)
+		self.ajouter_button.pack(padx=5)
+
+		self.menuAjout = tk.Menu(self.ajouter_button, tearoff=False)
+		self.menuAjout.add_command(label="Des morceaux", command=self.choose_track)
+		self.menuAjout.add_command(label="Un dossier", command=self.choose_folder)
+		self.ajouter_button.config(menu=self.menuAjout)
 
 		# Affichage des morceaux choisis.
 		self.morceaux_list = tk.Listbox(cadrePlaylist, width=45, height=10, bg="#f1f5f9", fg="#1e293b")
 		self.morceaux_list.pack(padx=10, pady=10)
 
-		# Validation ou annulation.
-		self.creer_button = tk.Button(cadrePlaylist, text="Créer", command=self.create_playlist)
-		self.creer_button.pack(pady=5)
+		# Cadre regroupant les boutons de validation.
+		self.cadreValidation = tk.Frame(cadrePlaylist, bg="#ffffff")
+		self.cadreValidation.pack(pady=10)
 
-		self.annuler_button = tk.Button(cadrePlaylist, text="Annuler", command=on_cancel)
-		self.annuler_button.pack(pady=5)
+		# Validation ou annulation.
+		self.creer_button = tk.Button(self.cadreValidation, text="Créer", command=self.create_playlist)
+		self.creer_button.pack(side=tk.LEFT, padx=5)
+
+		self.annuler_button = tk.Button(self.cadreValidation, text="Annuler", command=on_cancel)
+		self.annuler_button.pack(side=tk.LEFT, padx=5)
 
 	def choose_track(self):
 		"""
-		@brief Ajoute le fichier choisi à la playlist.
+		@brief Ajoute les fichiers audio sélectionnés à la playlist.
 		"""
-		cheminFichier = filedialog.askopenfilename(title="Choisir un morceau", filetypes=[("Fichiers MP3", "*.mp3"), ("Fichiers FLAC", "*.flac")])
+		cheminsFichiers = filedialog.askopenfilenames(title="Choisir des morceaux", filetypes=[("Fichiers audio", "*.mp3 *.flac")])
 
-		if cheminFichier == "":
+		if len(cheminsFichiers) == 0:
 			return
 
-		# Vérification et ajout du morceau par le service.
+		nombreAjoutes = 0
+		nombreErreurs = 0
+
+		# Ajout de chaque fichier ; un fichier invalide n'empêche pas les suivants.
+		for cheminFichier in cheminsFichiers:
+			try:
+				morceau = self.library_service.add_track_to_playlist(self.playlist, cheminFichier)
+			except ValueError:
+				nombreErreurs += 1
+			else:
+				# Affichage du nom du fichier uniquement.
+				cheminTexte = str(morceau.file_path)
+				position = len(cheminTexte) - 1
+				while position > 0 and cheminTexte[position] != "/":
+					position -= 1
+
+				nomFichier = cheminTexte[position + 1:]
+				self.morceaux_list.insert(tk.END, nomFichier)
+				nombreAjoutes += 1
+
+		message = str(nombreAjoutes) + " morceau(x) ajouté(s)."
+		if nombreErreurs > 0:
+			message += "\n" + str(nombreErreurs) + " fichier(s) n'ont pas pu être lus."
+
+		messagebox.showinfo("Ajout des morceaux", message)
+
+	def choose_folder(self):
+		"""
+		@brief Ajoute les morceaux d'un dossier et de ses sous-dossiers.
+		"""
+		cheminDossier = filedialog.askdirectory(title="Choisir un dossier de musique")
+
+		if cheminDossier == "":
+			return
+
+		# Recherche des fichiers MP3 et FLAC par le service existant.
 		try:
-			morceau = self.library_service.add_track_to_playlist(self.playlist, cheminFichier)
+			fichiersAudio = self.library_service.find_audio_files(cheminDossier)
 		except ValueError as erreur:
-			messagebox.showwarning("Ajout impossible", str(erreur))
+			messagebox.showwarning("Dossier inaccessible", str(erreur))
 			return
 
-		self.morceaux_list.insert(tk.END, str(morceau.file_path))
+		if len(fichiersAudio) == 0:
+			messagebox.showinfo("Aucun morceau", "Aucun fichier MP3 ou FLAC reconnu dans ce dossier.")
+			return
+
+		nombreAjoutes = 0
+		nombreErreurs = 0
+
+		# Position du début du chemin relatif, commune à tous les morceaux.
+		debutChemin = len(cheminDossier)
+		if cheminDossier[-1] != "/":
+			debutChemin += 1
+
+		# Ajout des morceaux en conservant ceux déjà sélectionnés.
+		for cheminFichier in fichiersAudio:
+			try:
+				morceau = self.library_service.add_track_to_playlist(self.playlist, cheminFichier)
+			except ValueError:
+				nombreErreurs += 1
+			else:
+				# Affichage du chemin relatif au dossier choisi.
+				cheminRelatif = str(morceau.file_path)[debutChemin:]
+				self.morceaux_list.insert(tk.END, cheminRelatif)
+				nombreAjoutes += 1
+
+		message = str(nombreAjoutes) + " morceau(x) ajouté(s)."
+
+		if nombreErreurs > 0:
+			message += "\n" + str(nombreErreurs) + " fichier(s) n'ont pas pu être lus."
+
+		messagebox.showinfo("Ajout du dossier", message)
 
 	def create_playlist(self):
 		"""

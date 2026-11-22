@@ -3,7 +3,6 @@ import sys
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
-from types import SimpleNamespace
 
 
 SRC_DIRECTORY = Path(__file__).resolve().parents[2]
@@ -12,6 +11,7 @@ if str(SRC_DIRECTORY) not in sys.path:
 
 from cli.main import main
 from library.models.playlist import Playlist
+from library.models.track import AudioFormat, Track
 
 
 class FakeLibraryService:
@@ -28,8 +28,8 @@ class FakeLibraryService:
 
 		self.received_data = (directory_path, output_path)
 		tracks = [
-			SimpleNamespace(file_path=Path("music/a.mp3")),
-			SimpleNamespace(file_path=Path("music/b.flac")),
+			Track(Path("music/a.mp3"), AudioFormat.MP3),
+			Track(Path("music/b.flac"), AudioFormat.FLAC),
 		]
 		return Playlist(output_path.stem, file_path=output_path, tracks=tracks)
 

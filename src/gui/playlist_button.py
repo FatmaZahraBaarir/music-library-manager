@@ -23,9 +23,13 @@ class PlaylistButton:
 		self.playlist = playlist
 		self.on_open_playlist = on_open_playlist
 
+		# Cadre permettant de mettre en évidence la playlist affichée.
+		self.cadre = tk.Frame(cadrePlaylists, bg="#f1f5f9")
+		self.cadre.pack(pady=5)
+
 		# Bouton portant le nom de la playlist.
-		self.bouton = tk.Button(cadrePlaylists, text=self.playlist.name, command=self.open_playlist)
-		self.bouton.pack(pady=5)
+		self.bouton = tk.Button(self.cadre, text=self.playlist.name, command=self.open_playlist)
+		self.bouton.pack(padx=3, pady=3)
 
 	def open_playlist(self):
 		"""
