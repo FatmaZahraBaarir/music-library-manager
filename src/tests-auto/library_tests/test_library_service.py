@@ -10,6 +10,7 @@ if str(SRC_DIRECTORY) not in sys.path:
 	sys.path.insert(0, str(SRC_DIRECTORY))
 
 from library.interfaces.library_interface import LibraryInterface
+from library.models.album import Album
 from library.models.metadata import Metadata
 from library.models.track import AudioFormat, Track
 from library.services.library_service import LibraryService
@@ -59,6 +60,18 @@ class FakeMetadataService:
 		return Track(file_path, AudioFormat.MP3)
 
 
+class FakeAlbumService:
+	"""@brief Simule AlbumService pour vérifier la délégation de la façade."""
+
+	def __init__(self):
+		self.album = Album(title="Album", artist="Artist")
+		self.received_search = None
+
+	def get_album(self, artist, album_title):
+		self.received_search = (artist, album_title)
+		return self.album
+
+
 class LibraryServiceTests(unittest.TestCase):
 	"""
 	@brief Vérifie le point d'entrée commun destiné au CLI et à la GUI.
@@ -71,9 +84,11 @@ class LibraryServiceTests(unittest.TestCase):
 		self.audio_files = [Path("first.mp3"), Path("second.mp3")]
 		self.file_service = FakeFileService(self.audio_files)
 		self.metadata_service = FakeMetadataService()
+		self.album_service = FakeAlbumService()
 		self.library_service = LibraryService(
 			file_service=self.file_service,
 			metadata_service=self.metadata_service,
+			album_service=self.album_service,
 		)
 
 	def test_library_service_implements_interface(self):
@@ -155,6 +170,47 @@ class LibraryServiceTests(unittest.TestCase):
 			self.audio_files,
 		)
 		self.assertTrue(all(isinstance(track, Track) for track in tracks))
+
+	def test_fetch_album_for_track_delegates_and_associates_album(self):
+		"""@brief Recherche un album depuis les métadonnées d'un Track."""
+		track = Track(
+			Path("music.mp3"),
+			AudioFormat.MP3,
+			metadata=Metadata(
+				artist="  Artist  ",
+				album_title="  Album  ",
+			),
+		)
+
+		album = self.library_service.fetch_album_for_track(track)
+
+		self.assertIs(album, self.album_service.album)
+		self.assertIs(track.album, album)
+		self.assertEqual(
+			self.album_service.received_search,
+			("Artist", "Album"),
+		)
+
+	def test_fetch_album_for_track_rejects_invalid_values(self):
+		"""@brief Refuse un objet incorrect ou des métadonnées incomplètes."""
+		with self.assertRaisesRegex(ValueError, "objet Track"):
+			self.library_service.fetch_album_for_track(None)
+
+		missing_artist = Track(
+			Path("music.mp3"),
+			AudioFormat.MP3,
+			metadata=Metadata(album_title="Album"),
+		)
+		with self.assertRaisesRegex(ValueError, "artiste"):
+			self.library_service.fetch_album_for_track(missing_artist)
+
+		missing_album = Track(
+			Path("music.mp3"),
+			AudioFormat.MP3,
+			metadata=Metadata(artist="Artist"),
+		)
+		with self.assertRaisesRegex(ValueError, "titre"):
+			self.library_service.fetch_album_for_track(missing_album)
 
 	@unittest.skipUnless(
 		MP3_FILE.is_file() and FLAC_FILE.is_file(),

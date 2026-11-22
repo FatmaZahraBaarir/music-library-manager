@@ -2,6 +2,7 @@ from pathlib import Path
 
 from library.interfaces.library_interface import LibraryInterface
 from library.models.playlist import Playlist
+from library.models.track import Track
 
 
 class LibraryService(LibraryInterface):
@@ -18,6 +19,7 @@ class LibraryService(LibraryInterface):
 		metadata_input_service=None,
 		xspf_service=None,
 		audio_service=None,
+		album_service=None,
 	):
 		"""
 		@brief Initialise la façade avec ses services techniques.
@@ -32,6 +34,8 @@ class LibraryService(LibraryInterface):
 		@type xspf_service XspfService ou None
 		@param audio_service Service de lecture, ou None pour le service réel.
 		@type audio_service AudioService ou None
+		@param album_service Service d'informations d'album, ou None.
+		@type album_service AlbumService ou None
 		"""
 		if file_service is None:
 			from library.services.file.file_service import FileService
@@ -48,12 +52,16 @@ class LibraryService(LibraryInterface):
 		if audio_service is None:
 			from library.services.audio.audio_service import AudioService
 			audio_service = AudioService()
+		if album_service is None:
+			from library.services.api.album_service import AlbumService
+			album_service = AlbumService()
 
 		self.file_service = file_service
 		self.metadata_service = metadata_service
 		self.metadata_input_service = metadata_input_service
 		self.xspf_service = xspf_service
 		self.audio_service = audio_service
+		self.album_service = album_service
 
 	def find_audio_files(self, directory_path):
 		"""
@@ -137,6 +145,37 @@ class LibraryService(LibraryInterface):
 		@rtype Track
 		"""
 		return self.metadata_service.read_track(file_path)
+
+	def fetch_album_for_track(self, track):
+		"""
+		@brief Recherche un album depuis les métadonnées d'un morceau.
+
+		@param track Morceau local à enrichir.
+		@type track Track
+		@return Album trouvé et associé au morceau.
+		@rtype Album
+		@raise ValueError Si le morceau, l'artiste ou l'album sont invalides.
+		"""
+		if not isinstance(track, Track):
+			raise ValueError("La recherche d'album attend un objet Track.")
+
+		artist = track.metadata.artist
+		album_title = track.metadata.album_title
+		if not isinstance(artist, str) or not artist.strip():
+			raise ValueError(
+				"Impossible de rechercher l'album : l'artiste est absent."
+			)
+		if not isinstance(album_title, str) or not album_title.strip():
+			raise ValueError(
+				"Impossible de rechercher l'album : le titre est absent."
+			)
+
+		album = self.album_service.get_album(
+			artist=artist.strip(),
+			album_title=album_title.strip(),
+		)
+		track.album = album
+		return album
 
 	def scan_library(self, directory_path):
 		"""

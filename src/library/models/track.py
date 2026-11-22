@@ -21,7 +21,7 @@ class Track:
 	"""
 
 	def __init__(self, file_path, format, metadata=None,
-				 duration_seconds=None, lyrics=None, cover=None):
+				 duration_seconds=None, lyrics=None, album=None):
 		"""
 		@brief Initialise un morceau et ses informations associées.
 
@@ -35,12 +35,12 @@ class Track:
 		@type duration_seconds float ou None
 		@param lyrics Paroles du morceau, ou None.
 		@type lyrics str ou None
-		@param cover Pochette associée au morceau, ou None.
-		@type cover Cover ou None
+		@param album Album associé au morceau, ou None avant sa recherche.
+		@type album Album ou None
 		"""
 		self.file_path = file_path
 		self.format = format
 		self.metadata = Metadata() if metadata is None else metadata
 		self.duration_seconds = duration_seconds
 		self.lyrics = lyrics
-		self.cover = cover
+		self.album = album

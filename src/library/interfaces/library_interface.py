@@ -90,6 +90,19 @@ class LibraryInterface(ABC):
 		raise NotImplementedError
 
 	@abstractmethod
+	def fetch_album_for_track(self, track):
+		"""
+		@brief Recherche et associe les informations d'album d'un morceau.
+
+		@param track Morceau dont les métadonnées identifient l'album.
+		@type track Track
+		@return Album trouvé et associé au morceau.
+		@rtype Album
+		@raise ValueError Si le morceau ou ses métadonnées sont invalides.
+		"""
+		raise NotImplementedError
+
+	@abstractmethod
 	def scan_library(self, directory_path):
 		"""
 		@brief Explore un dossier et construit tous les morceaux reconnus.

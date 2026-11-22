@@ -37,6 +37,9 @@ L'application permet de gérer une bibliothèque musicale composée de fichiers 
 - lecture audio des morceaux MP3 et FLAC via `AudioService` ;
 - pause, reprise et arrêt de la lecture ;
 - progression ordonnée d'une playlist via le thread principal du CLI ou de la GUI ;
+- recherche d'une édition officielle d'album avec MusicBrainz ;
+- récupération des paroles de chaque piste avec LRCLIB ;
+- cache mémoire des albums et accès commun via `LibraryService` ;
 - première structure de l'interface graphique ;
 - tests automatiques.
 
@@ -47,7 +50,8 @@ L'application permet de gérer une bibliothèque musicale composée de fichiers 
 - ajout de morceaux par glisser-déposer ;
 - branchement des boutons de l'interface graphique ;
 - branchement de la lecture audio au CLI et à la GUI ;
-- récupération des informations d'album, des paroles et des pochettes.
+- branchement des informations d'album et des paroles au CLI et à la GUI ;
+- extraction, téléchargement et validation des pochettes.
 
 ## Dépendances
 
@@ -57,6 +61,7 @@ Le projet utilise :
 - `mutagen` pour les métadonnées MP3 et FLAC ;
 - `python-magic` pour vérifier le type MIME des fichiers ;
 - `pygame-ce` pour lire, mettre en pause et arrêter les fichiers audio ;
+- `requests` pour interroger MusicBrainz et LRCLIB ;
 - `tkinter` pour l'interface graphique ;
 - `xml.etree.ElementTree`, fourni avec Python, pour créer et lire les fichiers XML/XSPF.
 
@@ -136,8 +141,19 @@ Ces tests vérifient actuellement :
 ### Tests des arguments du CLI
 
 ```bash
-python3 -m unittest discover -s src/tests-auto/cli -p "test_*.py" -v
+PYTHONDONTWRITEBYTECODE=1 python3 -B -m unittest discover \
+-s src/tests-auto/cli_tests -p "test_*.py" -v
 ```
+
+### Tests des informations d'album et des paroles
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 python3 -B -m unittest discover \
+-s src/tests-auto/api -p "test_*.py" -v
+```
+
+Ces tests simulent les réponses HTTP afin de rester reproductibles sans
+connexion Internet.
 
 ### Tous les tests
 
@@ -146,7 +162,7 @@ PYTHONDONTWRITEBYTECODE=1 PYGAME_HIDE_SUPPORT_PROMPT=1 SDL_AUDIODRIVER=dummy \
 python3 -B -m unittest discover -s src/tests-auto -p "test_*.py" -v
 ```
 
-La commande unique découvre les tests classés dans `audio`, `cli_tests`, `file`, `library_tests`, `metadata` et `playlist`.
+La commande unique découvre les tests classés dans `api`, `audio`, `cli_tests`, `file`, `library_tests`, `metadata` et `playlist`.
 
 Deux fichiers audio de test sont disponibles dans `src/tests-auto/fixtures/audio/` : `sample.mp3` et `sample.flac`. Ils servent à tester les formats MP3 et FLAC ainsi que la lecture et la modification des métadonnées.
 
