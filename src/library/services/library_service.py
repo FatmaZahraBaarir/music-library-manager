@@ -1,6 +1,8 @@
 from pathlib import Path
 
 from library.interfaces.library_interface import LibraryInterface
+from library.models.album import Album
+from library.models.cover import Cover
 from library.models.playlist import Playlist
 from library.models.track import Track
 
@@ -20,6 +22,7 @@ class LibraryService(LibraryInterface):
 		xspf_service=None,
 		audio_service=None,
 		album_service=None,
+		cover_service=None,
 	):
 		"""
 		@brief Initialise la façade avec ses services techniques.
@@ -36,6 +39,8 @@ class LibraryService(LibraryInterface):
 		@type audio_service AudioService ou None
 		@param album_service Service d'informations d'album, ou None.
 		@type album_service AlbumService ou None
+		@param cover_service Service de pochettes, ou None pour le service réel.
+		@type cover_service CoverService ou None
 		"""
 		if file_service is None:
 			from library.services.file.file_service import FileService
@@ -55,6 +60,9 @@ class LibraryService(LibraryInterface):
 		if album_service is None:
 			from library.services.api.album_service import AlbumService
 			album_service = AlbumService()
+		if cover_service is None:
+			from library.services.cover.cover_service import CoverService
+			cover_service = CoverService()
 
 		self.file_service = file_service
 		self.metadata_service = metadata_service
@@ -62,6 +70,7 @@ class LibraryService(LibraryInterface):
 		self.xspf_service = xspf_service
 		self.audio_service = audio_service
 		self.album_service = album_service
+		self.cover_service = cover_service
 
 	def find_audio_files(self, directory_path):
 		"""
@@ -176,6 +185,80 @@ class LibraryService(LibraryInterface):
 		)
 		track.album = album
 		return album
+
+	@staticmethod
+	def _create_partial_album_for_track(track):
+		"""@brief Crée un album local si les métadonnées nécessaires existent."""
+		artist = track.metadata.artist
+		album_title = track.metadata.album_title
+		if not isinstance(artist, str) or not artist.strip():
+			return None
+		if not isinstance(album_title, str) or not album_title.strip():
+			return None
+		year = track.metadata.year
+		return Album(
+			title=album_title.strip(),
+			artist=artist.strip(),
+			release_date=str(year) if year is not None else None,
+		)
+
+	def find_cover_for_track(self, track):
+		"""
+		@brief Recherche une pochette locale avant de consulter les APIs.
+
+		@param track Morceau dont la pochette doit être trouvée.
+		@type track Track
+		@return Pochette locale validée, candidate distante, ou None.
+		@rtype Cover ou None
+		@raise ValueError Si le morceau ou ses informations sont invalides.
+		"""
+		if not isinstance(track, Track):
+			raise ValueError("La recherche de pochette attend un objet Track.")
+		if track.album is not None and track.album.cover is not None:
+			return track.album.cover
+
+		cover = self.cover_service.find_local_cover(track)
+		if cover is not None:
+			if track.album is None:
+				track.album = self._create_partial_album_for_track(track)
+			if track.album is not None:
+				track.album.cover = cover
+			return cover
+
+		if track.album is None or not track.album.musicbrainz_id:
+			self.fetch_album_for_track(track)
+		return self.cover_service.download_cover(track.album)
+
+	def save_cover_for_track(self, track, cover):
+		"""
+		@brief Confirme, sauvegarde et associe une pochette à son album.
+
+		@param track Morceau déterminant le dossier de destination.
+		@type track Track
+		@param cover Pochette confirmée par l'utilisateur.
+		@type cover Cover
+		@return Chemin de l'image sauvegardée.
+		@rtype pathlib.Path
+		@raise ValueError Si le morceau ou la pochette sont invalides.
+		"""
+		if not isinstance(track, Track):
+			raise ValueError("La sauvegarde de pochette attend un objet Track.")
+		if not isinstance(cover, Cover):
+			raise ValueError("La sauvegarde attend un objet Cover.")
+
+		previous_validation = cover.is_validated
+		cover.is_validated = True
+		try:
+			output_path = self.cover_service.save_cover(track, cover)
+		except Exception:
+			cover.is_validated = previous_validation
+			raise
+
+		if track.album is None:
+			track.album = self._create_partial_album_for_track(track)
+		if track.album is not None:
+			track.album.cover = cover
+		return output_path
 
 	def scan_library(self, directory_path):
 		"""

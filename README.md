@@ -40,6 +40,9 @@ L'application permet de gérer une bibliothèque musicale composée de fichiers 
 - recherche d'une édition officielle d'album avec MusicBrainz ;
 - récupération des paroles de chaque piste avec LRCLIB ;
 - cache mémoire des albums et accès commun via `LibraryService` ;
+- recherche d'une pochette dans le dossier ou dans les tags MP3/FLAC ;
+- téléchargement d'une candidate avec Cover Art Archive ;
+- validation JPEG/PNG, cache et sauvegarde via `LibraryService` ;
 - première structure de l'interface graphique ;
 - tests automatiques.
 
@@ -51,7 +54,7 @@ L'application permet de gérer une bibliothèque musicale composée de fichiers 
 - branchement des boutons de l'interface graphique ;
 - branchement de la lecture audio au CLI et à la GUI ;
 - branchement des informations d'album et des paroles au CLI et à la GUI ;
-- extraction, téléchargement et validation des pochettes.
+- affichage et confirmation des pochettes téléchargées dans la GUI.
 
 ## Dépendances
 
@@ -62,6 +65,7 @@ Le projet utilise :
 - `python-magic` pour vérifier le type MIME des fichiers ;
 - `pygame-ce` pour lire, mettre en pause et arrêter les fichiers audio ;
 - `requests` pour interroger MusicBrainz et LRCLIB ;
+- Cover Art Archive est interrogé avec `requests` pour les pochettes ;
 - `tkinter` pour l'interface graphique ;
 - `xml.etree.ElementTree`, fourni avec Python, pour créer et lire les fichiers XML/XSPF.
 
@@ -155,6 +159,15 @@ PYTHONDONTWRITEBYTECODE=1 python3 -B -m unittest discover \
 Ces tests simulent les réponses HTTP afin de rester reproductibles sans
 connexion Internet.
 
+### Tests des pochettes
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 python3 -B -m unittest discover \
+-s src/tests-auto/cover -p "test_*.py" -v
+```
+
+Ces tests travaillent sur des copies temporaires des fichiers MP3 et FLAC.
+
 ### Tous les tests
 
 ```bash
@@ -162,7 +175,7 @@ PYTHONDONTWRITEBYTECODE=1 PYGAME_HIDE_SUPPORT_PROMPT=1 SDL_AUDIODRIVER=dummy \
 python3 -B -m unittest discover -s src/tests-auto -p "test_*.py" -v
 ```
 
-La commande unique découvre les tests classés dans `api`, `audio`, `cli_tests`, `file`, `library_tests`, `metadata` et `playlist`.
+La commande unique découvre les tests classés dans `api`, `audio`, `cli_tests`, `cover`, `file`, `library_tests`, `metadata` et `playlist`.
 
 Deux fichiers audio de test sont disponibles dans `src/tests-auto/fixtures/audio/` : `sample.mp3` et `sample.flac`. Ils servent à tester les formats MP3 et FLAC ainsi que la lecture et la modification des métadonnées.
 

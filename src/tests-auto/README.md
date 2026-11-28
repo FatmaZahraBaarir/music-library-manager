@@ -7,6 +7,7 @@ tests-auto/
 ├── api/         # MusicBrainz, LRCLIB et orchestration des albums
 ├── audio/       # lecteur, service audio et délégation par LibraryService
 ├── cli_tests/   # arguments, fichiers, dossiers et lecture audio du CLI
+├── cover/       # extraction, téléchargement, validation et sauvegarde
 ├── file/        # exploration récursive et filtrage des fichiers
 ├── library_tests/ # façade commune LibraryService
 ├── metadata/    # conversion, lecture et écriture des métadonnées
@@ -35,7 +36,7 @@ PYTHONDONTWRITEBYTECODE=1 python3 -B -m unittest discover \
 -s src/tests-auto/metadata -p "test_*.py" -v
 ```
 
-Remplacer `metadata` par `api`, `audio`, `cli_tests`, `file`, `library_tests` ou `playlist` selon le domaine à vérifier.
+Remplacer `metadata` par `api`, `audio`, `cli_tests`, `cover`, `file`, `library_tests` ou `playlist` selon le domaine à vérifier.
 
 ## Fichiers audio de référence
 

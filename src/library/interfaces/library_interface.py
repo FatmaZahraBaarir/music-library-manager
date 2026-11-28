@@ -103,6 +103,34 @@ class LibraryInterface(ABC):
 		raise NotImplementedError
 
 	@abstractmethod
+	def find_cover_for_track(self, track):
+		"""
+		@brief Recherche une pochette locale puis distante pour un morceau.
+
+		@param track Morceau dont la pochette doit être trouvée.
+		@type track Track
+		@return Pochette locale validée, candidate distante, ou None.
+		@rtype Cover ou None
+		@raise ValueError Si le morceau ou ses informations sont invalides.
+		"""
+		raise NotImplementedError
+
+	@abstractmethod
+	def save_cover_for_track(self, track, cover):
+		"""
+		@brief Confirme et sauvegarde une pochette pour un morceau.
+
+		@param track Morceau déterminant le dossier de destination.
+		@type track Track
+		@param cover Pochette confirmée par l'utilisateur.
+		@type cover Cover
+		@return Chemin de l'image sauvegardée.
+		@rtype pathlib.Path
+		@raise ValueError Si le morceau ou la pochette sont invalides.
+		"""
+		raise NotImplementedError
+
+	@abstractmethod
 	def scan_library(self, directory_path):
 		"""
 		@brief Explore un dossier et construit tous les morceaux reconnus.
